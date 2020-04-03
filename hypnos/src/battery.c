@@ -2,9 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Copyright (c) 2020 Endian Technologies AB
- *
- * battery_mv_to_ppt, battery_level_point, battery_raw_to_mv:
- * Copyright (c) 2019 Jan Jansen
+ * Copyright (c) 2020 Nordic Semiconductor
  */
 
 #include <zephyr.h>
