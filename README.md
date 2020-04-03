@@ -3,7 +3,12 @@
 This is a WIP [Zephyr RTOS](https://www.zephyrproject.org/) firmware for the
 [PineTime](https://www.pine64.org/pinetime/) smartwatch.
 
-It started as a fork of Jan Jansen's [firmware toolkit](https://github.com/najnesnaj/pinetime-zephyr).
+It started as a fork of najnesnaj's [firmware toolkit](https://github.com/najnesnaj/pinetime-zephyr)
+and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-firmware).
+
+> **Hypnos**, son of Night and Darkness</br>
+> He is said to be a calm and gentle god, as he helps humans in need and, due to their sleep, owns
+> half of their lives.<sup>[1](https://en.wikipedia.org/wiki/Hypnos)</sup>
 
 ## Getting started
 
@@ -29,5 +34,5 @@ $ west flash
 
 ## License
 
-All code and documentation is licensed under the Apache 2.0 (see LICENSE),
+All code and documentation are licensed under the Apache 2.0 (see LICENSE),
 unless stated otherwise.
