@@ -1,7 +1,10 @@
 /*
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Copyright (c) 2020 Endian Technologies AB
  *
- * SPDX-License-Identifier: Apache-2.0
+ * battery_mv_to_ppt, battery_level_point, battery_raw_to_mv:
+ * Copyright (c) 2019 Jan Jansen
  */
 
 #include <zephyr.h>
@@ -10,7 +13,6 @@
 #include <drivers/adc.h>
 #include <adc.h>
 #include "battery.h"
-//#include <logging/log.h>
 
 #define CHANNEL_ID 7
 #define RESOLUTION 12
@@ -68,14 +70,11 @@ void battery_status_init()
         percentage_dev = device_get_binding("ADC_0");
         if (percentage_dev == NULL) {
                 printk("failed to get binding for device\n");
-        //        return -ENODEV;
         }
 
-        if(adc_channel_setup(percentage_dev, &m_1st_channel_cfg) < 0)
-        {
+        if (adc_channel_setup(percentage_dev, &m_1st_channel_cfg) < 0) {
                 printk("failed to setup channel for adc\n");
         }
-
 
         charging_dev = device_get_binding("GPIO_0");
         gpio_pin_configure(charging_dev, 12, GPIO_DIR_IN);
