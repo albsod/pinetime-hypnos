@@ -18,7 +18,7 @@ void main(void)
 
 	while (true) {
 		printk("proc: %u %% \n", battery_get_percentage());
-		printk("charging: %d %% \n", battery_get_charging_status());
+		printk("charging: %d \n", battery_get_charging_status());
 		k_sleep(1000);
 	}
 }

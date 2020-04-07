@@ -26,7 +26,8 @@ static bool charging;
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** STRUCTS ********** **********  */
-static struct battery_level_point {
+
+struct battery_level_point {
 	/** Remaining life at #lvl_mV. */
 	u16_t lvl_pptt;
 
@@ -75,6 +76,7 @@ void battery_status_init()
                 printk("failed to setup channel for adc\n");
         }
 
+	battery_update_percentage();
         printk("Init battery status: Done\n");
 }
 
