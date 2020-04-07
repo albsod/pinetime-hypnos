@@ -1,32 +1,24 @@
+/*
+ * Copyright (c) 2020 Endian Technologies AB
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 #ifndef CLOCK__H
 #define CLOCK__H
 
-#include <zephyr.h>
 #include <time.h>
 
-/* Stringify build time */                                     
+/* Stringify build time included by cmake */
 #define _xstr(s) _str(s)
-#define _str(s) #s  
+#define _str(s) #s
 #define TIME_OF_BUILD _xstr(CURRENT_TIME_OF_BUILD)
 
-/* time_t str_to_time(const char *); */
-
-/* void clock_init(); */
-
-/* char *time_get_local(); */
-
-void str_to_time(const char *str, struct tm *ti);
-
+void clock_str_to_local_time(const char *str, struct tm *ti);
 void clock_init();
-
-char *time_get_local();
-
-struct tm *time_get();
-
-
-void print_time();
-void increment_time(struct k_timer *tick);
-//void increment_time(void);
-
+void clock_increment_local_time();
+char *clock_get_local_time();
+struct tm *clock_get_time();
+void clock_print_time();
 
 #endif /* CLOCK__H */
