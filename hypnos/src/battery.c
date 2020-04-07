@@ -10,6 +10,7 @@
 #include <drivers/gpio.h>
 #include <drivers/adc.h>
 #include <adc.h>
+#include <stdbool.h>
 #include "battery.h"
 
 #define CHANNEL_ID 7
@@ -18,13 +19,14 @@
 #define COUNT_DOWN 5000
 
 /* ********** ********** VARIABLES ********** ********** */
-struct device* charging_dev;
-struct device* percentage_dev;
-s16_t data[1];
-uint32_t battery_percentage;
+static struct device* percentage_dev;
+static s16_t data[1];
+static uint32_t battery_percentage;
+static bool charging;
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** STRUCTS ********** **********  */
+
 struct battery_level_point {
 	/** Remaining life at #lvl_mV. */
 	u16_t lvl_pptt;
@@ -41,7 +43,7 @@ static const struct battery_level_point lipo[] = {
 	{ 0, 3100 },
 };
 
-const struct adc_sequence sequence = {
+static const struct adc_sequence sequence = {
 	.channels    = BIT(CHANNEL_ID),
 	.buffer      = data,
 	.buffer_size = sizeof(data),
@@ -74,24 +76,30 @@ void battery_status_init()
                 printk("failed to setup channel for adc\n");
         }
 
-        charging_dev = device_get_binding("GPIO_0");
-        gpio_pin_configure(charging_dev, 12, GPIO_DIR_IN);
+	battery_update_percentage();
         printk("Init battery status: Done\n");
+}
+
+void battery_update_percentage()
+{
+	adc_read(percentage_dev, &sequence);
+	uint32_t mv = battery_raw_to_mv(data[0]);
+	battery_percentage = battery_mv_to_ppt(mv)/100;
+}
+
+void battery_update_charging_status(bool value)
+{
+	charging = value;
 }
 
 uint8_t battery_get_percentage()
 {
-        adc_read(percentage_dev, &sequence);
-        uint32_t mv = battery_raw_to_mv(data[0]);
-        battery_percentage = battery_mv_to_ppt(mv)/100;
         return battery_percentage;
 }
 
 bool battery_get_charging_status()
 {
-        u32_t res = 0U;
-        gpio_pin_read(charging_dev, 12, &res);
-        return res!=1U;
+        return charging;
 }
 
 uint32_t battery_raw_to_mv(s16_t raw)
