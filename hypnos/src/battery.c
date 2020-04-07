@@ -1,8 +1,8 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
- *
  * Copyright (c) 2020 Endian Technologies AB
  * Copyright (c) 2020 Nordic Semiconductor
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
 
 #include <zephyr.h>
