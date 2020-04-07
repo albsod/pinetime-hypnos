@@ -32,13 +32,14 @@ $ west build -p -b pinetime hypnos
 $ west flash
 ```
 
-## Licenses
+## Copying
 
-The application code is under the Mozilla Public License 2.0.
+The Hypnos application is under the Mozilla Public License 2.0 and
+the documentation, including this README, is CC BY-SA 3.0.
 
-Zephyr RTOS is under Apache 2.0.
-
-This README and forthcoming documentation will be under CC BY-SA 3.0.
+The other files should be under Apache 2.0, MIT or other permissive
+licenses. Look for SPDX lines and check the source tree history
+to be sure.
 
 ![MPL compatibility](https://opensource.com/sites/default/files/styles/image-full-size/public/lead-images/OSCD_MPL2_520x292_FINAL.png?itok=6vv4XnEz)
 <br />Image by Opensource.com
