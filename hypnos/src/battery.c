@@ -132,4 +132,15 @@ uint32_t battery_mv_to_ppt(uint32_t mv)
 		  / (pa->lvl_mV - pb->lvl_mV));
 }
 
+void battery_print_status()
+{
+	printk("Battery status: ");
+	printk("%u %% ", battery_get_percentage());
+	if (charging) {
+		printk("(charging)\n");
+	} else {
+		printk("(discharging)\n");
+	}
+}
+
 /* ********** ********** ********** ********** ********** */
