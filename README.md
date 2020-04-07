@@ -32,7 +32,10 @@ $ west build -p -b pinetime hypnos
 $ west flash
 ```
 
-## License
+## Licenses
 
-All code and documentation are licensed under the Apache 2.0 (see LICENSE),
-unless stated otherwise.
+The application code is under the Mozilla Public License 2.0.
+
+Zephyr RTOS is under Apache 2.0.
+
+This README and forthcoming documentation will be under CC BY-SA 3.0.
