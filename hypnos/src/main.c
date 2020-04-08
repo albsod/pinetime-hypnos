@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 #include <stdbool.h>
+#include "backlight.h"
 #include "battery.h"
 #include "event_handler.h"
 #include "clock.h"
@@ -16,6 +17,7 @@ void main(void)
 	printk("Welcome to Hypnos!\n");
 	battery_status_init();
 	clock_init();
+	backlight_init();
 	init_event_handler();
 
 	while (true) {

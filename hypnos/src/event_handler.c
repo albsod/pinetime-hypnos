@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 #include <drivers/gpio.h>
+#include "backlight.h"
 #include "battery.h"
 #include "clock.h"
 #include "event_handler.h"
@@ -71,6 +72,7 @@ void battery_callback_charging(struct device *gpiob, struct gpio_callback *cb, u
         u32_t res = 0U;
         gpio_pin_read(charging_dev, 12, &res);
         battery_update_charging_status(res != 1U);
+	backlight_enable(!res);
 }
 
 void clock_callback_tick(struct k_timer *tick)
