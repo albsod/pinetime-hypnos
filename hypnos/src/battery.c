@@ -1,8 +1,10 @@
 /*
  * Copyright (c) 2020 Endian Technologies AB
- * Copyright (c) 2020 Nordic Semiconductor
  *
- * SPDX-License-Identifier: MPL-2.0
+ * SPDX-License-Identifier: MPL-2.0 AND Apache-2.0
+ *
+ * battery_mv_to_ppt, battery_level_point, battery_raw_to_mv:
+ * Copyright (c) 2020 Nordic Semiconductor
  */
 
 #include <zephyr.h>
