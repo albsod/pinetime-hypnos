@@ -13,6 +13,7 @@
 #include <drivers/adc.h>
 #include <adc.h>
 #include <stdbool.h>
+#include <lvgl.h>
 #include "battery.h"
 
 #define CHANNEL_ID 7
@@ -25,6 +26,8 @@ static struct device* percentage_dev;
 static s16_t data[1];
 static uint32_t battery_percentage;
 static bool charging;
+static char battery_label_str[32];
+static lv_obj_t *battery_label;
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** STRUCTS ********** **********  */
@@ -140,9 +143,22 @@ void battery_print_status()
 	printk("%u %% ", battery_get_percentage());
 	if (charging) {
 		printk("(charging)\n");
+		sprintf(battery_label_str, "BAT: %u %% (charging)", battery_get_percentage());
 	} else {
 		printk("(discharging)\n");
+		sprintf(battery_label_str, "BAT: %u %% (discharging)", battery_get_percentage());
 	}
+
+	lv_label_set_text(battery_label, battery_label_str);
+}
+
+void battery_gfx_init()
+{
+	sprintf(battery_label_str, "%u %%", battery_get_percentage());
+
+	battery_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_text(battery_label, battery_label_str);
+	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 }
 
 /* ********** ********** ********** ********** ********** */
