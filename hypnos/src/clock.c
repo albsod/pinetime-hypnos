@@ -8,12 +8,15 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <lvgl.h>
 #include <sys/printk.h>
 #include "clock.h"
 #include "battery.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
 static time_t local_time;
+static char clock_label_str[16];
+static lv_obj_t *clock_label;
 
 static struct tm ti = {
 	.tm_sec = 0,
@@ -76,6 +79,21 @@ void clock_print_time()
 	       localtime(&local_time)->tm_min,
 	       localtime(&local_time)->tm_sec);
 	printf("%s %d %s\n", wday, localtime(&local_time)->tm_mday, mon);
+	sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
+		localtime(&local_time)->tm_min,
+		localtime(&local_time)->tm_sec);
+
+	lv_label_set_text(clock_label, clock_label_str);
 }
 
+void clock_gfx_init()
+{
+	sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
+	       localtime(&local_time)->tm_min,
+	       localtime(&local_time)->tm_sec);
+
+	clock_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_text(clock_label, clock_label_str);
+	lv_obj_align(clock_label, NULL, LV_ALIGN_CENTER, 0, 0);
+}
 /* ********** ********** ********** ********** ********** */
