@@ -26,7 +26,7 @@ static struct gpio_callback charging_cb;
 /* ********** variables ********** */
 
 /* ********** init function ********** */
-void init_event_handler()
+void event_handler_init()
 {
         // TODO: Check return values for error handling.
 
