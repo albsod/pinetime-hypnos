@@ -77,26 +77,35 @@ void clock_print_time()
 		LOG_ERR("Failed to print time!");
 	}
 	LOG_INF("%s %d %s\n", log_strdup(wday), localtime(&local_time)->tm_mday,
-	log_strdup(mon));
-	LOG_INF("%d:%d:%d", localtime(&local_time)->tm_hour,
+		log_strdup(mon));
+	LOG_INF("%d:%d:%d | ", localtime(&local_time)->tm_hour,
 	       localtime(&local_time)->tm_min,
 	       localtime(&local_time)->tm_sec);
-	sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
-		localtime(&local_time)->tm_min,
-		localtime(&local_time)->tm_sec);
+
+       sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
+	       localtime(&local_time)->tm_min,
+	       localtime(&local_time)->tm_sec);
 
 	lv_label_set_text(clock_label, clock_label_str);
 }
 
 void clock_gfx_init()
 {
-	sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
+
+	LOG_INF("%d:%d:%d | ", localtime(&local_time)->tm_hour,
 	       localtime(&local_time)->tm_min,
 	       localtime(&local_time)->tm_sec);
+
+       sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
+       	       localtime(&local_time)->tm_min,
+       	       localtime(&local_time)->tm_sec);
 
 	clock_label = lv_label_create(lv_scr_act(), NULL);
 	lv_label_set_text(clock_label, clock_label_str);
 	lv_obj_align(clock_label, NULL, LV_ALIGN_CENTER, 0, 0);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> Added logging and removed every printk
 /* ********** ********** ********** ********** ********** */

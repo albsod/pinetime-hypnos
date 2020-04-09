@@ -139,8 +139,12 @@ void battery_print_status()
 	if (charging) {
 		LOG_INF("Battery status: %u%% (charging)",
 			battery_get_percentage());
+		sprintf(battery_label_str, "BAT: %u %% (charging)",
+			battery_get_percentage());
 	} else {
 		LOG_INF("Battery status: %u%% (discharging)",
+			battery_get_percentage());
+		sprintf(battery_label_str, "BAT: %u %% (discharging)",
 			battery_get_percentage());
 	}
 
@@ -149,6 +153,7 @@ void battery_print_status()
 
 void battery_gfx_init()
 {
+	LOG_INF("%s %u %%", log_strdup(battery_label_str), battery_get_percentage());
 	sprintf(battery_label_str, "%u %%", battery_get_percentage());
 
 	battery_label = lv_label_create(lv_scr_act(), NULL);

@@ -5,7 +5,6 @@
  */
 
 #include <zephyr.h>
-#include <sys/printk.h>
 #include <stdbool.h>
 #include <lvgl.h>
 #include "backlight.h"
