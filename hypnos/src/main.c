@@ -13,13 +13,15 @@
 #include "clock.h"
 #include "display.h"
 #include "event_handler.h"
+#include "log.h"
 
 void main(void)
 {
-	printk("Welcome to Hypnos!\n");
+	LOG_INF("Welcome to hypnos!");
 
 	/* Create welcome screen */
 	// TODO: Move this out of main
+
 	lv_obj_t *hypnos_label;
 	hypnos_label = lv_label_create(lv_scr_act(), NULL);
 	lv_label_set_text(hypnos_label, "<<Pinetime Hypnos>>");
@@ -33,7 +35,7 @@ void main(void)
 	display_init();
 	backlight_init();
 	event_handler_init();
-	
+
 	display_disable_blanking();
 
 	while (true) {
