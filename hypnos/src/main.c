@@ -22,12 +22,14 @@ void main(void)
 	// TODO: Move this out of main
 	lv_obj_t *hypnos_label;
 	hypnos_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_text(hypnos_label, "Welcome to Hypnos");
-	lv_obj_align(hypnos_label, NULL, LV_ALIGN_CENTER, 0, 0);
+	lv_label_set_text(hypnos_label, "<<Pinetime Hypnos>>");
+	lv_obj_align(hypnos_label, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
 	lv_task_handler();
 
-	battery_status_init();
 	clock_init();
+	clock_gfx_init();
+	battery_status_init();
+	battery_gfx_init();
 	display_init();
 	backlight_init();
 	event_handler_init();
@@ -35,7 +37,7 @@ void main(void)
 	display_disable_blanking();
 
 	while (true) {
-		k_sleep(1);
 		k_cpu_idle();
+		lv_task_handler();
 	}
 }
