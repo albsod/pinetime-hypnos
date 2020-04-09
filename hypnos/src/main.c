@@ -5,7 +5,6 @@
  */
 
 #include <zephyr.h>
-#include <sys/printk.h>
 #include <stdbool.h>
 #include <lvgl.h>
 #include "backlight.h"
@@ -39,6 +38,7 @@ void main(void)
 	display_disable_blanking();
 
 	while (true) {
+		k_sleep(1);
 		k_cpu_idle();
 		lv_task_handler();
 	}
