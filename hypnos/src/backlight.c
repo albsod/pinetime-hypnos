@@ -4,6 +4,7 @@
 
 #include <zephyr.h>
 #include <sys/printk.h>
+#include <stdbool.h>
 #include <drivers/gpio.h>
 #include <display.h>
 #include "backlight.h"
