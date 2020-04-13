@@ -33,10 +33,11 @@ void main(void)
 	display_init();
 	backlight_init();
 	event_handler_init();
-	
+
 	display_disable_blanking();
 
 	while (true) {
+		k_sleep(1);
 		k_cpu_idle();
 		lv_task_handler();
 	}
