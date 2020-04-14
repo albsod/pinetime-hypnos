@@ -78,7 +78,7 @@ void clock_print_time()
 	}
 	LOG_INF("%s %d %s\n", log_strdup(wday), localtime(&local_time)->tm_mday,
 		log_strdup(mon));
-	LOG_INF("%d:%d:%d | ", localtime(&local_time)->tm_hour,
+	LOG_INF("%d:%d:%d", localtime(&local_time)->tm_hour,
 	       localtime(&local_time)->tm_min,
 	       localtime(&local_time)->tm_sec);
 
@@ -91,11 +91,6 @@ void clock_print_time()
 
 void clock_gfx_init()
 {
-
-	LOG_INF("%d:%d:%d | ", localtime(&local_time)->tm_hour,
-	       localtime(&local_time)->tm_min,
-	       localtime(&local_time)->tm_sec);
-
        sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
        	       localtime(&local_time)->tm_min,
        	       localtime(&local_time)->tm_sec);
@@ -104,8 +99,5 @@ void clock_gfx_init()
 	lv_label_set_text(clock_label, clock_label_str);
 	lv_obj_align(clock_label, NULL, LV_ALIGN_CENTER, 0, 0);
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> Added logging and removed every printk
 /* ********** ********** ********** ********** ********** */
