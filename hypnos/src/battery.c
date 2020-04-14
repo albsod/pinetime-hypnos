@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Endian Technologies AB
  *
- * SPDX-License-Identifier: MPL-2.0 AND Apache-2.0
+ * SPDX-License-Identifier: MPL-2.0
  *
  * battery_mv_to_ppt, battery_level_point, battery_raw_to_mv:
  * Copyright (c) 2020 Nordic Semiconductor
@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <lvgl.h>
 #include "battery.h"
+#include "log.h"
 
 #define CHANNEL_ID 7
 #define RESOLUTION 12
@@ -31,7 +32,6 @@ static lv_obj_t *battery_label;
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** STRUCTS ********** **********  */
-
 struct battery_level_point {
 	/** Remaining life at #lvl_mV. */
 	u16_t lvl_pptt;
@@ -64,25 +64,22 @@ static const struct adc_channel_cfg m_1st_channel_cfg = {
 	.input_positive   = 8,
 #endif
 };
-
 /* ********** ********** ********** ********** ********** */
-
 
 /* ********** ********** FUNCTIONS ********** ********** */
 void battery_status_init()
 {
-        printk("Init battery status: Start\n");
         percentage_dev = device_get_binding("ADC_0");
         if (percentage_dev == NULL) {
-                printk("failed to get binding for device\n");
+		LOG_ERR("Failed to get binding for ADC_0 device!");
         }
 
         if (adc_channel_setup(percentage_dev, &m_1st_channel_cfg) < 0) {
-                printk("failed to setup channel for adc\n");
+		LOG_ERR("Failed to setup channel for adc!");
         }
 
 	battery_update_percentage();
-        printk("Init battery status: Done\n");
+	LOG_DBG("Battery status init: Done");
 }
 
 void battery_update_percentage()
@@ -139,14 +136,12 @@ uint32_t battery_mv_to_ppt(uint32_t mv)
 
 void battery_print_status()
 {
-	printk("Battery status: ");
-	printk("%u %% ", battery_get_percentage());
 	if (charging) {
-		printk("(charging)\n");
-		sprintf(battery_label_str, "BAT: %u %% (charging)", battery_get_percentage());
+		LOG_INF("Battery status: %u%% (charging)",
+			battery_get_percentage());
 	} else {
-		printk("(discharging)\n");
-		sprintf(battery_label_str, "BAT: %u %% (discharging)", battery_get_percentage());
+		LOG_INF("Battery status: %u%% (discharging)",
+			battery_get_percentage());
 	}
 
 	lv_label_set_text(battery_label, battery_label_str);
@@ -160,5 +155,4 @@ void battery_gfx_init()
 	lv_label_set_text(battery_label, battery_label_str);
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 }
-
 /* ********** ********** ********** ********** ********** */

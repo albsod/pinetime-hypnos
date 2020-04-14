@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <lvgl.h>
-#include <sys/printk.h>
 #include "clock.h"
 #include "battery.h"
+#include "log.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
 static time_t local_time;
@@ -37,7 +37,7 @@ void clock_str_to_local_time(const char *str, struct tm *ti)
 	if (sscanf(str, "%d-%d-%dT%d:%d:%d+%d", &ti->tm_year, &ti->tm_mon,
 		   &ti->tm_mday, &ti->tm_hour, &ti->tm_min, &ti->tm_sec,
 		   &ti->tm_isdst) != 7) {
-		printk("Failed to parse time of build.\n");
+		LOG_ERR("Failed to parse time of build!");
 	}
 	ti->tm_year-=1900;
 	ti->tm_mon-=1;
@@ -48,7 +48,8 @@ void clock_init()
 {
 	/* Set time to time of build */
 	clock_str_to_local_time(TIME_OF_BUILD, &ti);
-	printk("Time set to time of build\n");
+	LOG_DBG("Time set to time of build");
+	LOG_DBG("Clock init: Done");
 }
 
 struct tm *clock_get_time()
@@ -73,12 +74,13 @@ void clock_print_time()
 	char mon[15];
 
 	if (sscanf(clock_get_local_time(), "%s %s", wday, mon) != 2) {
-		printk("Failed to print time.\n");
+		LOG_ERR("Failed to print time!");
 	}
-	printf("\n%d:%d:%d | ", localtime(&local_time)->tm_hour,
+	LOG_INF("%s %d %s\n", log_strdup(wday), localtime(&local_time)->tm_mday,
+	log_strdup(mon));
+	LOG_INF("%d:%d:%d", localtime(&local_time)->tm_hour,
 	       localtime(&local_time)->tm_min,
 	       localtime(&local_time)->tm_sec);
-	printf("%s %d %s\n", wday, localtime(&local_time)->tm_mday, mon);
 	sprintf(clock_label_str, "%d:%d:%d", localtime(&local_time)->tm_hour,
 		localtime(&local_time)->tm_min,
 		localtime(&local_time)->tm_sec);
@@ -96,4 +98,5 @@ void clock_gfx_init()
 	lv_label_set_text(clock_label, clock_label_str);
 	lv_obj_align(clock_label, NULL, LV_ALIGN_CENTER, 0, 0);
 }
+
 /* ********** ********** ********** ********** ********** */

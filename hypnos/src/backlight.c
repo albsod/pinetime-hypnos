@@ -3,10 +3,11 @@
  */
 
 #include <zephyr.h>
-#include <sys/printk.h>
+#include <stdbool.h>
 #include <drivers/gpio.h>
 #include <display.h>
 #include "backlight.h"
+#include "log.h"
 
 /* ********** ********** DEFINES ********** ********** ********** */
 #define BACKLIGHT_PORT  DT_ALIAS_LED1_GPIOS_CONTROLLER
@@ -24,7 +25,7 @@ void backlight_init()
 	backlight_dev = device_get_binding(BACKLIGHT_PORT);
 	gpio_pin_configure(backlight_dev, BACKLIGHT, GPIO_DIR_OUT);
 	backlight_enable(true);
-	printk("Backlight initialized.\n");
+	LOG_DBG("Backlight init: Done");
 }
 
 void backlight_enable(bool enable) {

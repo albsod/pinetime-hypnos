@@ -10,6 +10,7 @@
 #include <drivers/display.h>
 #include <display.h>
 #include "display.h"
+#include "log.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
 static struct device *display_dev;
@@ -19,7 +20,7 @@ static struct device *display_dev;
 void display_init(void)
 {
 	display_dev = device_get_binding(CONFIG_LVGL_DISPLAY_DEV_NAME);
-	printk("Display initialized.\n");
+	LOG_DBG("Display init: Done");
 }
 
 void display_disable_blanking(void)
