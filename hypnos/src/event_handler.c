@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 #include <drivers/gpio.h>
+#include <drivers/sensor.h>
 #include "backlight.h"
 #include "battery.h"
 #include "clock.h"
@@ -20,6 +21,7 @@
 #define BTN_OUT 15
 #define EDGE    (GPIO_INT_EDGE | GPIO_INT_DOUBLE_EDGE)
 #define PULL_UP DT_ALIAS_SW0_GPIOS_FLAGS
+#define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
 #define BACKLIGHT_OFF_TIME K_SECONDS(5)
 /* ********** defines ********** */
 
@@ -31,6 +33,11 @@ static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
 static struct gpio_callback button_cb;
+static struct device *touch_dev;
+static struct sensor_trigger trig = {
+	.type = SENSOR_TRIG_DATA_READY,
+	.chan = SENSOR_CHAN_ACCEL_XYZ,
+};
 /* ********** variables ********** */
 
 /* ********** init function ********** */
@@ -48,13 +55,15 @@ void event_handler_init()
 	gpio_pin_configure(button_dev, BTN_IN, GPIO_DIR_IN | GPIO_INT |  PULL_UP
 			   | EDGE);
 	gpio_init_callback(&button_cb, button_callback, BIT(BTN_IN));
+	touch_dev = device_get_binding(TOUCH_PORT);
 
 	/* Enable GPIOs */
 	gpio_add_callback(charging_dev, &charging_cb);
         gpio_pin_enable_callback(charging_dev, BAT_CHA);
 	gpio_add_callback(button_dev, &button_cb);
-        gpio_pin_enable_callback(button_dev, BTN_IN);
-	
+	gpio_pin_enable_callback(button_dev, BTN_IN);
+	sensor_trigger_set(touch_dev, &trig, touch_callback_tap);
+
 	/* Set button out pin to high to enable the button */
 	u32_t button_out = 1U;
         gpio_pin_configure(button_dev, BTN_OUT, GPIO_DIR_OUT);
@@ -112,6 +121,12 @@ void clock_callback_tick(struct k_timer *tick)
 	clock_increment_local_time();
 	clock_print_time();
 	battery_print_status();
+}
+
+void touch_callback_tap(struct device *touch_dev, struct sensor_trigger *trigger)
+{
+	backlight_enable(true);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_OFF_TIME, 0);
 }
 
 /* ********** handler functions ********** */
