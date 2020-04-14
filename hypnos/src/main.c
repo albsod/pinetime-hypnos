@@ -5,7 +5,6 @@
  */
 
 #include <zephyr.h>
-#include <sys/printk.h>
 #include <stdbool.h>
 #include <lvgl.h>
 #include "backlight.h"
@@ -13,10 +12,11 @@
 #include "clock.h"
 #include "display.h"
 #include "event_handler.h"
+#include "log.h"
 
 void main(void)
 {
-	printk("Welcome to Hypnos!\n");
+	LOG_INF("Welcome to Hypnos!");
 
 	/* Create welcome screen */
 	// TODO: Move this out of main

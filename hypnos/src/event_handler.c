@@ -5,13 +5,13 @@
  */
 
 #include <zephyr.h>
-#include <sys/printk.h>
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
 #include "backlight.h"
 #include "battery.h"
 #include "clock.h"
 #include "event_handler.h"
+#include "log.h"
 
 /* ********** defines ********** */
 #define BAT_PERCENTAGE_READ_INTERVAL K_MINUTES(5)
@@ -86,9 +86,10 @@ void event_handler_init()
         u32_t res = 0U;
         gpio_pin_read(charging_dev, 12, &res);
         battery_update_charging_status(res != 1U);
+
+	LOG_DBG("Event handler init: Done");
 }
 /* ********** init function ********** */
-
 
 /* ********** handler functions ********** */
 void backlight_off_interrupt_handler(struct k_timer *light_off)
