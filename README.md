@@ -21,7 +21,7 @@ and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-
 - [x] Clock: accurately increment current time
 - [x] Build current time of host machine into the firmware image
 - [x] Battery: show state of charge (%) and whether it's charging
-- [x] Graphics: show time and battery status using LittlevGL
+- [x] Graphics: show time, date and battery status using LittlevGL
 - [ ] Set alarm
 - [ ] Set current time from BLE-connected device
 - [ ] Show notifications from BLE-connected device
