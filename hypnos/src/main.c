@@ -22,9 +22,8 @@ void main(void)
 	// TODO: Move this out of main
 	lv_obj_t *hypnos_label;
 	hypnos_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_text(hypnos_label, "<<Pinetime Hypnos>>");
-	lv_obj_align(hypnos_label, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
-	lv_task_handler();
+	lv_label_set_text(hypnos_label, "~ Pinetime Hypnos ~");
+	lv_obj_align(hypnos_label, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
 
 	clock_init();
 	clock_gfx_init();
