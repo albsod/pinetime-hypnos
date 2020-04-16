@@ -21,6 +21,7 @@
 #define RESOLUTION 12
 #define DIVIDER 2
 #define COUNT_DOWN 5000
+#define BAT_LABEL_MARGIN 3
 
 /* ********** ********** VARIABLES ********** ********** */
 static struct device* percentage_dev;
@@ -137,28 +138,34 @@ uint32_t battery_mv_to_ppt(uint32_t mv)
 
 void battery_print_status()
 {
+	uint8_t percentage = battery_get_percentage();
 	if (charging) {
 		LOG_INF("Battery status: %u%% (charging)",
-			battery_get_percentage());
-		sprintf(battery_label_str, "BAT: %u %% (charging)",
-			battery_get_percentage());
+			percentage);
+		lv_label_set_text(battery_label, LV_SYMBOL_CHARGE);
+		lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, BAT_LABEL_MARGIN);
 	} else {
 		LOG_INF("Battery status: %u%% (discharging)",
-			battery_get_percentage());
-		sprintf(battery_label_str, "BAT: %u %% (discharging)",
-			battery_get_percentage());
-	}
+			percentage);
 
-	lv_label_set_text(battery_label, battery_label_str);
+		if (percentage > 89) {
+			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_FULL);
+		} else if (percentage > 74) {
+			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_3);
+		} else if (percentage > 49) {
+			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_2);
+		} else if (percentage > 24) {
+			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_1);
+		} else {
+			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_EMPTY);
+		}
+		lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
+	}
 }
 
 void battery_gfx_init()
 {
 	LOG_INF("%s %u %%", log_strdup(battery_label_str), battery_get_percentage());
-	sprintf(battery_label_str, "%u %%", battery_get_percentage());
-
 	battery_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_text(battery_label, battery_label_str);
-	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 }
 /* ********** ********** ********** ********** ********** */
