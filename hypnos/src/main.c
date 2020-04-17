@@ -13,6 +13,8 @@
 #include "display.h"
 #include "event_handler.h"
 #include "log.h"
+#include "bt.h"
+#include "cts_sync.h"
 
 void main(void)
 {
@@ -31,13 +33,21 @@ void main(void)
 	battery_gfx_init();
 	display_init();
 	backlight_init();
+	bt_init();
+	bt_gfx_init();
 	event_handler_init();
 
 	display_disable_blanking();
 
 	while (true) {
-		k_sleep(1);
-		k_cpu_idle();
-		lv_task_handler();
+		if (bt_mode()) {
+			k_sleep(10);
+			cts_sync_loop();
+			lv_task_handler();
+		} else {
+			k_sleep(1);
+			k_cpu_idle();
+			lv_task_handler();
+		}
 	}
 }

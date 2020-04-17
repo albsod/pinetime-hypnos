@@ -7,11 +7,14 @@
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
+#include <stdbool.h>
+#include <lvgl.h>
 #include "backlight.h"
 #include "battery.h"
 #include "clock.h"
 #include "event_handler.h"
 #include "log.h"
+#include "cts_sync.h"
 
 /* ********** defines ********** */
 #define BAT_PERCENTAGE_READ_INTERVAL K_MINUTES(5)
@@ -22,13 +25,15 @@
 #define EDGE    (GPIO_INT_EDGE | GPIO_INT_DOUBLE_EDGE)
 #define PULL_UP DT_ALIAS_SW0_GPIOS_FLAGS
 #define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
-#define BACKLIGHT_OFF_TIME K_SECONDS(5)
+#define BACKLIGHT_TIMEOUT K_SECONDS(5)
+#define BT_TIMEOUT K_SECONDS(30)
 /* ********** defines ********** */
 
 /* ********** variables ********** */
 static struct k_timer battery_percentage_timer;
 static struct k_timer clock_tick_timer;
 static struct k_timer backlight_off_timer;
+static struct k_timer bt_off_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
@@ -38,6 +43,9 @@ static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
+bool bt_enabled = 0;
+static lv_obj_t *bt_label;
+
 /* ********** variables ********** */
 
 /* ********** init function ********** */
@@ -74,12 +82,13 @@ void event_handler_init()
 		     battery_percentage_isr, NULL);
 	k_timer_init(&clock_tick_timer, clock_tick_isr, NULL);
 	k_timer_init(&backlight_off_timer, backlight_off_isr, NULL);
+	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
 
 	/* Start timers */
         k_timer_start(&battery_percentage_timer, BAT_PERCENTAGE_READ_INTERVAL,
 		      BAT_PERCENTAGE_READ_INTERVAL);
 	k_timer_start(&clock_tick_timer, K_SECONDS(1), K_SECONDS(1));
-	k_timer_start(&backlight_off_timer, BACKLIGHT_OFF_TIME, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 
 	/* Special cases */
         /* Get battery charging status */
@@ -109,13 +118,17 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_
         gpio_pin_read(charging_dev, 12, &res);
         battery_update_charging_status(res != 1U);
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_OFF_TIME, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 }
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_OFF_TIME, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	bt_enabled = true;
+	lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
+	LOG_INF("Bluetooth mode enabled...");
+	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
 }
 
 void clock_tick_isr(struct k_timer *tick)
@@ -128,7 +141,25 @@ void clock_tick_isr(struct k_timer *tick)
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_OFF_TIME, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 }
 
+void bt_off_isr(struct k_timer *bt)
+{
+	bt_enabled = 0;
+	lv_label_set_text(bt_label, "");
+	LOG_INF("Bluetooth mode disabled...");
+}
+
+bool bt_mode(void)
+{
+	return bt_enabled;
+}
+
+void bt_gfx_init()
+{
+	bt_label = lv_label_create(lv_scr_act(), NULL);
+	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+	lv_label_set_text(bt_label, "");
+}
 /* ********** handler functions ********** */
