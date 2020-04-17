@@ -90,10 +90,8 @@ void clock_print_time()
 	if (sscanf(clock_get_local_time(), "%s %s", wday, mon) != 2) {
 		LOG_ERR("Failed to print time!");
 	}
-	LOG_INF("%s %d %s", log_strdup(wday), localtime(&local_time)->tm_mday,
-		log_strdup(mon));
-	LOG_INF("%02d:%02d", localtime(&local_time)->tm_hour,
-		localtime(&local_time)->tm_min);
+	LOG_INF("%s %d %s | %02d:%02d", log_strdup(wday), localtime(&local_time)->tm_mday,
+		log_strdup(mon), localtime(&local_time)->tm_hour, localtime(&local_time)->tm_min);
 	sprintf(clock_label_str, "%02d:%02d", localtime(&local_time)->tm_hour,
 		localtime(&local_time)->tm_min);
 	sprintf(date_label_str, "%s %d %s", wday,

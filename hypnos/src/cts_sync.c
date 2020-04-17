@@ -24,7 +24,7 @@ cts_datetime_t clock_datetime;
 
 static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 {
-    LOG_INF("\nCTS sync to clock started.\n Y%04d D%03d T%2d:%2d:%2d",
+    LOG_INF("CTS sync to clock started.\n Y%04d D%03d T%2d:%2d:%2d",
         cts_datetime->year, cts_datetime->day,
         cts_datetime->hours, cts_datetime->minutes, cts_datetime->seconds);
 
