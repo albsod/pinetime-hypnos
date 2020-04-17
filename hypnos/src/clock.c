@@ -12,6 +12,9 @@
 #include "clock.h"
 #include "battery.h"
 #include "log.h"
+#include "cts_sync.h"
+#include "bt.h"
+#include "event_handler.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
 static time_t local_time;
@@ -33,17 +36,17 @@ static struct tm ti = {
 /* ********** ********** ********** ********** ********** ********** */
 
 /* ********** ********** FUNCTIONS ********** ********** */
-void clock_str_to_local_time(const char *str, struct tm *ti)
+void clock_str_to_local_time(const char *str, struct tm *t)
 {
         /* Date and time format: 2020-04-04T20:48:11+02:00 */
-	if (sscanf(str, "%d-%d-%dT%d:%d:%d+%d", &ti->tm_year, &ti->tm_mon,
-		   &ti->tm_mday, &ti->tm_hour, &ti->tm_min, &ti->tm_sec,
-		   &ti->tm_isdst) != 7) {
+	if (sscanf(str, "%d-%d-%dT%d:%d:%d+%d", &t->tm_year, &t->tm_mon,
+		   &t->tm_mday, &t->tm_hour, &t->tm_min, &t->tm_sec,
+		   &t->tm_isdst) != 7) {
 		LOG_ERR("Failed to parse time of build!");
 	}
-	ti->tm_year-=1900;
-	ti->tm_mon-=1;
-	local_time = mktime(ti);
+	t->tm_year-=1900;
+	t->tm_mon-=1;
+	local_time = mktime(t);
 }
 
 void clock_init()
@@ -59,6 +62,12 @@ struct tm *clock_get_time()
 	return &ti;
 }
 
+void clock_sync_time(void)
+{
+	cts_get_datetime(&ti);
+	local_time = mktime(&ti);
+}
+
 char *clock_get_local_time()
 {
 	return ctime(&local_time);
@@ -68,6 +77,9 @@ char *clock_get_local_time()
 void clock_increment_local_time()
 {
 	local_time++;
+	if (bt_mode()) {
+		clock_sync_time();
+	}
 }
 
 void clock_print_time()
