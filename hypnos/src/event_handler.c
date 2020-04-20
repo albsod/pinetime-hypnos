@@ -55,27 +55,23 @@ void event_handler_init()
 
 	/* Initialize GPIOs */
         charging_dev = device_get_binding("GPIO_0");
-        gpio_pin_configure(charging_dev, BAT_CHA, GPIO_DIR_IN | GPIO_INT
-                | EDGE);
+        gpio_pin_configure(charging_dev, BAT_CHA, GPIO_INPUT | GPIO_INT_EDGE_BOTH);
         gpio_init_callback(&charging_cb, battery_charging_isr,
                 BIT(BAT_CHA));
 	button_dev = device_get_binding(BTN_PORT);
-	gpio_pin_configure(button_dev, BTN_IN, GPIO_DIR_IN | GPIO_INT |  PULL_UP
-			   | EDGE);
+	gpio_pin_configure(button_dev, BTN_IN, GPIO_INPUT | GPIO_INT_EDGE_FALLING | PULL_UP);
 	gpio_init_callback(&button_cb, button_pressed_isr, BIT(BTN_IN));
 	touch_dev = device_get_binding(TOUCH_PORT);
 
 	/* Enable GPIOs */
 	gpio_add_callback(charging_dev, &charging_cb);
-        gpio_pin_enable_callback(charging_dev, BAT_CHA);
 	gpio_add_callback(button_dev, &button_cb);
-	gpio_pin_enable_callback(button_dev, BTN_IN);
 	sensor_trigger_set(touch_dev, &tap, touch_tap_isr);
 
 	/* Set button out pin to high to enable the button */
 	u32_t button_out = 1U;
-        gpio_pin_configure(button_dev, BTN_OUT, GPIO_DIR_OUT);
-        gpio_pin_write(button_dev, BTN_OUT, button_out);
+        gpio_pin_configure(button_dev, BTN_OUT, GPIO_OUTPUT);
+        gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
 	/* Initialize timers */
         k_timer_init(&battery_percentage_timer,
@@ -93,8 +89,7 @@ void event_handler_init()
 	/* Special cases */
         /* Get battery charging status */
 	k_sleep(10);
-        u32_t res = 0U;
-        gpio_pin_read(charging_dev, BAT_CHA, &res);
+        u32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
         battery_update_charging_status(res != 1U);
 
 	LOG_DBG("Event handler init: Done");
@@ -114,9 +109,8 @@ void battery_percentage_isr(struct k_timer *bat)
 
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
 {
-        u32_t res = 0U;
-        gpio_pin_read(charging_dev, 12, &res);
-        battery_update_charging_status(res != 1U);
+	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
+	battery_update_charging_status(res != 1U);
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 }

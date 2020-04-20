@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <drivers/gpio.h>
 #include <drivers/adc.h>
-#include <adc.h>
+#include <syscalls/adc.h>
 #include <stdbool.h>
 #include <lvgl.h>
 #include "battery.h"

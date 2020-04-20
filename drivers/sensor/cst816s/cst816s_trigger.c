@@ -13,10 +13,6 @@
 
 #include <logging/log.h>
 
-#define PULL_UP  (1<<8)
-#define EDGE    (GPIO_INT_EDGE | GPIO_INT_ACTIVE_LOW)
-
-
 LOG_MODULE_DECLARE(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 
 int cst816s_attr_set(struct device *dev,
@@ -42,8 +38,6 @@ static void cst816s_gpio_callback(struct device *dev,
 
 	ARG_UNUSED(pins);
 
-	gpio_pin_disable_callback(dev, CONFIG_CST816S_GPIO_PIN_NUM);
-
 #if defined(CONFIG_CST816S_TRIGGER_OWN_THREAD)
 	k_sem_give(&drv_data->gpio_sem);
 #elif defined(CONFIG_CST816S_TRIGGER_GLOBAL_THREAD)
@@ -60,10 +54,6 @@ static void cst816s_thread_cb(void *arg)
 	if (drv_data->data_ready_handler != NULL) {
 		drv_data->data_ready_handler(dev, &drv_data->data_ready_trigger);
 	}
-
-
-
-	gpio_pin_enable_callback(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM);
 }
 
 #ifdef CONFIG_CST816S_TRIGGER_OWN_THREAD
@@ -140,7 +130,7 @@ int cst816s_init_interrupt(struct device *dev)
 
 
 
-	gpio_pin_configure(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM ,GPIO_DIR_IN | GPIO_INT | PULL_UP| EDGE | GPIO_INT_ACTIVE_HIGH );
+	gpio_pin_interrupt_configure(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM, GPIO_INPUT | GPIO_PULL_UP| GPIO_INT_EDGE_FALLING | GPIO_ACTIVE_LOW);
 
 	//	gpio_pin_configure(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM
 	//			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_LEVEL |
@@ -168,8 +158,5 @@ int cst816s_init_interrupt(struct device *dev)
 	drv_data->work.handler = cst816s_work_cb;
 	drv_data->dev = dev;
 #endif
-
-	gpio_pin_enable_callback(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM);
-
 	return 0;
 }
