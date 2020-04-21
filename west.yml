@@ -36,12 +36,12 @@ manifest:
   projects:
     - name: nrf
       repo-path: fw-nrfconnect-nrf
-      revision: a955d411cdb8d9abd862342823df8bfefeaf4d6a
+      revision: 30fd73de05df9d461ef628f5beeb3ba0aa8d82cc
       remote: ncs
     - name: zephyr
       repo-path: fw-nrfconnect-zephyr
       west-commands: scripts/west-commands.yml
-      revision: 3c75196149f876b4d40e490607d80591e60d467f
+      revision: 13dc96f83bab742cab9e08c2a3cd71aa8e75e9ad
       remote: ncs
     - name: nffs
       revision: 00dd4fab1a00f2f6e995ef3f2e7c3814689f8885
