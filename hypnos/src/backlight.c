@@ -23,13 +23,13 @@ static bool backlight_enabled = false;
 void backlight_init()
 {
 	backlight_dev = device_get_binding(BACKLIGHT_PORT);
-	gpio_pin_configure(backlight_dev, BACKLIGHT, GPIO_DIR_OUT);
+	gpio_pin_configure(backlight_dev, BACKLIGHT, GPIO_OUTPUT);
 	backlight_enable(true);
 	LOG_DBG("Backlight init: Done");
 }
 
 void backlight_enable(bool enable) {
-	gpio_pin_write(backlight_dev, BACKLIGHT, enable ? 0 : 1);
+	gpio_pin_set_raw(backlight_dev, BACKLIGHT, enable ? 0 : 1);
 	backlight_enabled = enable;
 }
 
