@@ -117,8 +117,8 @@ PO.23 LCD backlight
 		label = "DISPLAY";
 		spi-max-frequency = <8000000>;
 		reg = <0>;
-		cmd-data-gpios = <&gpio0 18 0>;
-		reset-gpios = <&gpio0 26 0>;
+		cmd-data-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
 		width = <240>;
 		height = <240>;
 		x-offset = <0>;
