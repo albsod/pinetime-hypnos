@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.13.1)
-include($ENV{ZEPHYR_BASE}/../pinetime/cmake/boilerplate.cmake)
+
+# Add the Pinetime board
+list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+
 include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 include_directories(include)
 project(hypnos)
