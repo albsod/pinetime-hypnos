@@ -8,11 +8,11 @@
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
 #include <stdbool.h>
-#include <lvgl.h>
 #include "backlight.h"
 #include "battery.h"
 #include "clock.h"
 #include "event_handler.h"
+#include "gfx.h"
 #include "log.h"
 #include "cts_sync.h"
 
@@ -44,8 +44,6 @@ static struct sensor_trigger tap = {
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
 bool bt_enabled = 0;
-static lv_obj_t *bt_label;
-
 /* ********** variables ********** */
 
 /* ********** init function ********** */
@@ -120,7 +118,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 	bt_enabled = true;
-	lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
+	gfx_bt_set_label(1);
 	LOG_INF("Bluetooth mode enabled...");
 	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
 }
@@ -128,8 +126,8 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 void clock_tick_isr(struct k_timer *tick)
 {
 	clock_increment_local_time();
-	clock_print_time();
-	battery_print_status();
+	clock_show_time();
+	battery_show_status();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
@@ -141,7 +139,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 void bt_off_isr(struct k_timer *bt)
 {
 	bt_enabled = 0;
-	lv_label_set_text(bt_label, "");
+	gfx_bt_set_label(0);
 	LOG_INF("Bluetooth mode disabled...");
 }
 
@@ -150,10 +148,4 @@ bool bt_mode(void)
 	return bt_enabled;
 }
 
-void bt_gfx_init()
-{
-	bt_label = lv_label_create(lv_scr_act(), NULL);
-	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	lv_label_set_text(bt_label, "");
-}
 /* ********** handler functions ********** */

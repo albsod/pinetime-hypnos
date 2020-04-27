@@ -13,7 +13,6 @@ and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-
 
 ## Features
 
-- [x] Power management by design: CPU idle in main loop; all functionality triggered by interrupts
 - [x] Debug output via JLink RTT
 - [x] Display
 - [x] Touch sensor: tap to light up the display
@@ -59,8 +58,8 @@ $ west flash
 The Hypnos application is under the Mozilla Public License 2.0 and
 the documentation, including this README, is CC BY-SA 3.0.
 
-The graphics library is under MIT/Expat and everything else (including Zephyr)
-should be under Apache 2.0. Look for SPDX lines and check the source tree
+Everything else should be under Apache 2.0, MIT/Expat, 3-clause BSD or similar
+permissive licenses. Look for SPDX lines and check the source tree
 history to be sure.
 
 MPL 2.0 is a file-based copyleft license compatible with all commonly used

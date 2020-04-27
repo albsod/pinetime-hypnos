@@ -13,23 +13,20 @@
 #include <drivers/adc.h>
 #include <syscalls/adc.h>
 #include <stdbool.h>
-#include <lvgl.h>
 #include "battery.h"
+#include "gfx.h"
 #include "log.h"
 
 #define CHANNEL_ID 7
 #define RESOLUTION 12
 #define DIVIDER 2
 #define COUNT_DOWN 5000
-#define BAT_LABEL_MARGIN 3
 
 /* ********** ********** VARIABLES ********** ********** */
 static struct device* percentage_dev;
 static s16_t data[1];
 static uint32_t battery_percentage;
 static bool charging;
-static char battery_label_str[32];
-static lv_obj_t *battery_label;
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** STRUCTS ********** **********  */
@@ -136,36 +133,29 @@ uint32_t battery_mv_to_ppt(uint32_t mv)
 		  / (pa->lvl_mV - pb->lvl_mV));
 }
 
-void battery_print_status()
+void battery_show_status()
 {
 	uint8_t percentage = battery_get_percentage();
 	if (charging) {
 		LOG_INF("Battery status: %u%% (charging)",
 			percentage);
-		lv_label_set_text(battery_label, LV_SYMBOL_CHARGE);
-		lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, BAT_LABEL_MARGIN);
+		gfx_battery_set_label(5);
 	} else {
 		LOG_INF("Battery status: %u%% (discharging)",
 			percentage);
 
 		if (percentage > 89) {
-			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_FULL);
+			gfx_battery_set_label(4);
 		} else if (percentage > 74) {
-			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_3);
+			gfx_battery_set_label(3);
 		} else if (percentage > 49) {
-			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_2);
+			gfx_battery_set_label(2);
 		} else if (percentage > 24) {
-			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_1);
+			gfx_battery_set_label(1);
 		} else {
-			lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_EMPTY);
+			gfx_battery_set_label(0);
 		}
-		lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
 	}
 }
 
-void battery_gfx_init()
-{
-	LOG_INF("%s %u %%", log_strdup(battery_label_str), battery_get_percentage());
-	battery_label = lv_label_create(lv_scr_act(), NULL);
-}
 /* ********** ********** ********** ********** ********** */

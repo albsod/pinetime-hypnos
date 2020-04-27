@@ -8,20 +8,18 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <lvgl.h>
 #include "clock.h"
 #include "battery.h"
 #include "log.h"
 #include "cts_sync.h"
 #include "bt.h"
+#include "gfx.h"
 #include "event_handler.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
 static time_t local_time;
-static char clock_label_str[32];
+static char time_label_str[32];
 static char date_label_str[32];
-static lv_obj_t *clock_label;
-static lv_obj_t *date_label;
 
 static struct tm ti = {
 	.tm_sec = 0,
@@ -82,7 +80,7 @@ void clock_increment_local_time()
 	}
 }
 
-void clock_print_time()
+void clock_show_time()
 {
 	char wday[4];
 	char mon[4];
@@ -90,39 +88,19 @@ void clock_print_time()
 	if (sscanf(clock_get_local_time(), "%s %s", wday, mon) != 2) {
 		LOG_ERR("Failed to print time!");
 	}
-	LOG_INF("%s %d %s | %02d:%02d", log_strdup(wday), localtime(&local_time)->tm_mday,
-		log_strdup(mon), localtime(&local_time)->tm_hour, localtime(&local_time)->tm_min);
-	sprintf(clock_label_str, "%02d:%02d", localtime(&local_time)->tm_hour,
+	LOG_INF("%s %d %s | %02d:%02d", log_strdup(wday),
+		localtime(&local_time)->tm_mday,
+		log_strdup(mon), localtime(&local_time)->tm_hour,
+		localtime(&local_time)->tm_min);
+	sprintf(time_label_str, "%02d:%02d", localtime(&local_time)->tm_hour,
 		localtime(&local_time)->tm_min);
 	sprintf(date_label_str, "%s %d %s", wday,
 		localtime(&local_time)->tm_mday, mon);
 
 	/* Make the hours:minutes separator blink to represent seconds */
 	if (local_time % 2) {
-		clock_label_str[2] = ' ';
+		time_label_str[2] = ' ';
 	}
-	lv_label_set_text(clock_label, clock_label_str);
-	lv_label_set_text(date_label, date_label_str);
+	gfx_time_set_label(time_label_str);
+	gfx_date_set_label(date_label_str);
 }
-
-void clock_gfx_init()
-{
-	char wday[4];
-	char mon[4];
-
-	if (sscanf(clock_get_local_time(), "%s %s", wday, mon) != 2) {
-		LOG_ERR("Failed to print time!");
-	}
-	sprintf(clock_label_str, "%02d:%02d", localtime(&local_time)->tm_hour,
-		localtime(&local_time)->tm_min);
-	sprintf(date_label_str, "%s %d %s", wday,
-		localtime(&local_time)->tm_mday, mon);
-
-	clock_label = lv_label_create(lv_scr_act(), NULL);
-	date_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_text(clock_label, clock_label_str);
-	lv_label_set_text(date_label, date_label_str);
-	lv_obj_align(clock_label, NULL, LV_ALIGN_CENTER, 0, -10);
-	lv_obj_align(date_label, clock_label, LV_ALIGN_CENTER, 0, 26);
-}
-/* ********** ********** ********** ********** ********** */
