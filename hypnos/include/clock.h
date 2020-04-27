@@ -20,7 +20,6 @@ void clock_increment_local_time(void);
 char *clock_get_local_time(void);
 struct tm *clock_get_time(void);
 void clock_sync_time(void);
-void clock_print_time(void);
-void clock_gfx_init(void);
+void clock_show_time(void);
 
 #endif /* CLOCK__H */

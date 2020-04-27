@@ -19,7 +19,6 @@ void battery_charging_isr(struct device*, struct gpio_callback *, u32_t);
 void clock_tick_isr(struct k_timer *);
 void button_pressed_isr(struct device *, struct gpio_callback *, u32_t);
 void touch_tap_isr(struct device *, struct sensor_trigger *);
-void bt_gfx_init(void);
 bool bt_mode(void);
 
 #endif /* EVENT_HANDLER */
