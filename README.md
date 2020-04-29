@@ -1,27 +1,28 @@
 # PineTime Hypnos
 
-This is a [Zephyr](https://www.zephyrproject.org/)-based firmware for the
-[PineTime](https://www.pine64.org/pinetime/) smartwatch focused on low power consumption.
-
-It started as a fork of najnesnaj's [firmware toolkit](https://github.com/najnesnaj/pinetime-zephyr)
-and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-firmware).
+<img src="hypnos/hypnos-photo.png" title="Background image: Night and Sleep by Evelyn De Morgan (1878)" width="240px" height="240px">
 
 > **Hypnos**, son of Night and Darkness</br>
 > He is said to be a calm and gentle god, as he helps humans in need and, due to their sleep, owns
 > half of their lives.<sup>[1](https://en.wikipedia.org/wiki/Hypnos)</sup>
 
+This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmware for the
+[PineTime](https://www.pine64.org/pinetime/) smartwatch focused on low power consumption.
+
+It started as a fork of najnesnaj's [firmware toolkit](https://github.com/najnesnaj/pinetime-zephyr)
+and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-firmware).
 
 ## Features
 
-- [x] Debug output via JLink RTT
-- [x] Display
+- [x] 100 % free software
 - [x] Touch sensor: tap to light up the display
-- [x] Button: press to light up the display
 - [x] Clock: accurately increment current time
-- [x] Build current time of host machine into the firmware image
-- [x] Battery: show state of charge (%) and whether it's charging
-- [x] Graphics: show time, date, battery and bluetooth status using LittlevGL
+- [x] Build date and current time of host machine into the firmware image
+- [x] Battery: get state of charge and whether it's charging
+- [x] Graphics: show background image, time, date, battery and bluetooth status using LittlevGL
 - [x] Set current time from bluetooth-connected device
+- [x] Button: press to start time syncronization
+- [x] Debug output via JLink RTT
 - [ ] Set alarm
 - [ ] Show notifications from bluetooth-connected device
 - [ ] Firmware update over bluetooth
