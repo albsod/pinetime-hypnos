@@ -7,7 +7,7 @@ list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Config files
-IF($ENV{LOGGING} STREQUAL "off")
+IF("$ENV{LOGGING}" STREQUAL "off")
   message(STATUS "LOGGING will be disabled.")
   set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf)
 ELSE()
