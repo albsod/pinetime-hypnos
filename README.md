@@ -22,7 +22,7 @@ and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-
 - [x] Graphics: show background image, time, date, battery and bluetooth status using LittlevGL
 - [x] Set current time from bluetooth-connected device
 - [x] Button: press to start time syncronization
-- [x] Debug output via JLink RTT
+- [x] Optional debug output via JLink RTT
 - [ ] Set alarm
 - [ ] Show notifications from bluetooth-connected device
 - [ ] Firmware update over bluetooth
@@ -46,13 +46,17 @@ $ west update
 
 Then complete the remaining steps.
 
-To build and install the application, run
+Optionally disable logging to save system resources:
+```
+$ export LOGGING="off"
+```
+
+Build and install the application:
 
 ```
-$ west build -p -b pinetime hypnos
+$ west build -b pinetime hypnos
 $ west flash
 ```
-
 
 ## Copying
 
