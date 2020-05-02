@@ -74,10 +74,7 @@ char *clock_get_local_time()
 /* Called by event handler */
 void clock_increment_local_time()
 {
-	local_time++;
-	if (bt_mode()) {
-		clock_sync_time();
-	}
+	local_time += 60;
 }
 
 void clock_show_time()
@@ -97,10 +94,11 @@ void clock_show_time()
 	sprintf(date_label_str, "%s %d %s", wday,
 		localtime(&local_time)->tm_mday, mon);
 
+	//TODO: inc time every second when display is on
 	/* Make the hours:minutes separator blink to represent seconds */
-	if (local_time % 2) {
-		time_label_str[2] = ' ';
-	}
+	/* if (local_time % 2) { */
+	/* 	time_label_str[2] = ' '; */
+	/* } */
 	gfx_time_set_label(time_label_str);
 	gfx_date_set_label(date_label_str);
 }

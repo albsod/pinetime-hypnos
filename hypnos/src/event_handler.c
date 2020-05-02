@@ -17,7 +17,6 @@
 #include "cts_sync.h"
 
 /* ********** defines ********** */
-#define BAT_PERCENTAGE_READ_INTERVAL K_MINUTES(5)
 #define BAT_CHA 12
 #define BTN_PORT DT_ALIAS_SW0_GPIOS_CONTROLLER
 #define BTN_IN  DT_ALIAS_SW0_GPIOS_PIN
@@ -26,11 +25,11 @@
 #define PULL_UP DT_ALIAS_SW0_GPIOS_FLAGS
 #define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
 #define BACKLIGHT_TIMEOUT K_SECONDS(5)
-#define BT_TIMEOUT K_SECONDS(30)
+#define BT_TIMEOUT K_SECONDS(15)
+#define CLOCK_INCREMENT_TIME K_SECONDS(60)
 /* ********** defines ********** */
 
 /* ********** variables ********** */
-static struct k_timer battery_percentage_timer;
 static struct k_timer clock_tick_timer;
 static struct k_timer backlight_off_timer;
 static struct k_timer bt_off_timer;
@@ -72,16 +71,12 @@ void event_handler_init()
         gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
 	/* Initialize timers */
-        k_timer_init(&battery_percentage_timer,
-		     battery_percentage_isr, NULL);
 	k_timer_init(&clock_tick_timer, clock_tick_isr, NULL);
 	k_timer_init(&backlight_off_timer, backlight_off_isr, NULL);
 	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
 
 	/* Start timers */
-        k_timer_start(&battery_percentage_timer, BAT_PERCENTAGE_READ_INTERVAL,
-		      BAT_PERCENTAGE_READ_INTERVAL);
-	k_timer_start(&clock_tick_timer, K_SECONDS(1), K_SECONDS(1));
+	k_timer_start(&clock_tick_timer, K_SECONDS(1), CLOCK_INCREMENT_TIME);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 
 	/* Special cases */
@@ -100,17 +95,13 @@ void backlight_off_isr(struct k_timer *light_off)
 	backlight_enable(false);
 }
 
-void battery_percentage_isr(struct k_timer *bat)
-{
-        battery_update_percentage();
-}
-
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
 {
 	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	battery_show_status();
 }
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
@@ -127,6 +118,7 @@ void clock_tick_isr(struct k_timer *tick)
 {
 	clock_increment_local_time();
 	clock_show_time();
+	battery_update_percentage();
 	battery_show_status();
 }
 

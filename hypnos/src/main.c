@@ -34,6 +34,8 @@ void main(void)
 		if (bt_mode()) {
 			k_sleep(10);
 			cts_sync_loop();
+			k_sleep(10);
+			clock_sync_time();
 			lv_task_handler();
 		} else {
 			k_sleep(1);
