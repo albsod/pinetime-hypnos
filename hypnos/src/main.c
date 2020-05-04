@@ -28,18 +28,15 @@ void main(void)
 	bt_init();
 	event_handler_init();
 
+	lv_task_handler();
 	display_disable_blanking();
-
+	bt_on();
+	
 	while (true) {
 		if (bt_mode()) {
-			clock_sync_time();
-			k_sleep(1);
-			lv_task_handler();
-			k_sleep(1);
+			bt_thread();
 		} else {
-			k_sleep(1);
-			k_cpu_idle();
-			lv_task_handler();
+			main_thread();
 		}
 	}
 }

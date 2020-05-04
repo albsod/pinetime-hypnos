@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include "backlight.h"
 #include "battery.h"
+#include "bt.h"
 #include "clock.h"
 #include "event_handler.h"
 #include "gfx.h"
@@ -27,6 +28,19 @@
 #define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
 #define BACKLIGHT_TIMEOUT K_SECONDS(5)
 #define BT_TIMEOUT K_SECONDS(10)
+
+/* size of stack area used by threads */
+#define STACKSIZE 1024
+
+/* scheduling priority used by each thread */
+#define PRIORITY 7
+
+K_SEM_DEFINE(enable_bt_sem, 0, 1);
+K_SEM_DEFINE(disable_bt_sem, 0, 1);
+K_THREAD_DEFINE(clock_sync_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
+                PRIORITY, 0, K_NO_WAIT);
+K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
+                PRIORITY, 0, K_NO_WAIT);
 /* ********** defines ********** */
 
 /* ********** variables ********** */
@@ -43,7 +57,10 @@ static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
-bool bt_enabled = 0;
+bool bt_enabled = false;
+
+struct k_sem enable_bt_sem;
+struct k_sem disable_bt_sem;
 /* ********** variables ********** */
 
 /* ********** init function ********** */
@@ -90,6 +107,10 @@ void event_handler_init()
         u32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
         battery_update_charging_status(res != 1U);
 
+        /* Show time, date and battery status */
+	clock_show_time();
+	battery_show_status();
+
 	LOG_DBG("Event handler init: Done");
 }
 /* ********** init function ********** */
@@ -117,11 +138,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 {
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
-	bt_enabled = true;
-	cts_sync_loop();
-	gfx_bt_set_label(1);
-	LOG_INF("Bluetooth mode enabled...");
-	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
+	bt_on();
 }
 
 void clock_tick_isr(struct k_timer *tick)
@@ -139,9 +156,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 
 void bt_off_isr(struct k_timer *bt)
 {
-	bt_enabled = 0;
-	gfx_bt_set_label(0);
-	LOG_INF("Bluetooth mode disabled...");
+	bt_off();
 }
 
 bool bt_mode(void)
@@ -150,3 +165,70 @@ bool bt_mode(void)
 }
 
 /* ********** handler functions ********** */
+
+/* ************* thread functions ***************/
+
+void bt_on(void)
+{
+	bt_enabled = true;
+	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
+	k_sem_give(&enable_bt_sem);
+}
+
+void bt_await_on(void)
+{
+	k_sem_take(&enable_bt_sem, K_FOREVER);
+}
+
+void bt_off(void)
+{
+	bt_enabled = false;
+	k_sem_give(&disable_bt_sem);
+}
+
+void bt_await_off(void)
+{
+	k_sem_take(&disable_bt_sem, K_FOREVER);
+}
+
+void main_thread(void)
+{
+	while (true) {
+	await_disable_bt:
+		bt_await_off();
+		LOG_INF("Exiting bluetooth mode...");
+		gfx_bt_set_label(0);
+		lv_task_handler();
+		bt_adv_stop();
+		while (true) {
+			k_sleep(1);
+			k_cpu_idle();
+			lv_task_handler();
+			if (bt_enabled)
+				goto await_disable_bt;
+		}
+	}
+}
+
+void bt_thread(void)
+{
+	while (true) {
+	await_enable_bt:
+		bt_await_on();
+		LOG_INF("Entering bluetooth mode...");
+		gfx_bt_set_label(1);
+		lv_task_handler();
+		// FIXME: don't do this if already started during init
+		bt_adv_start();
+		cts_sync_loop();
+		while (true) {
+			clock_sync_time();
+			k_sleep(10);
+			if (!bt_enabled) {
+				goto await_enable_bt;
+			}
+		}
+	}
+}
+
+/* ***************************************/
