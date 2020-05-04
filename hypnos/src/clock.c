@@ -75,9 +75,6 @@ char *clock_get_local_time()
 void clock_increment_local_time()
 {
 	local_time++;
-	if (bt_mode()) {
-		clock_sync_time();
-	}
 }
 
 void clock_show_time()
