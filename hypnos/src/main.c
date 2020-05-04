@@ -32,9 +32,10 @@ void main(void)
 
 	while (true) {
 		if (bt_mode()) {
-			k_sleep(10);
-			cts_sync_loop();
+			clock_sync_time();
+			k_sleep(1);
 			lv_task_handler();
+			k_sleep(1);
 		} else {
 			k_sleep(1);
 			k_cpu_idle();

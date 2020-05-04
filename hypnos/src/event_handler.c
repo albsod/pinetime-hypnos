@@ -26,7 +26,7 @@
 #define PULL_UP DT_ALIAS_SW0_GPIOS_FLAGS
 #define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
 #define BACKLIGHT_TIMEOUT K_SECONDS(5)
-#define BT_TIMEOUT K_SECONDS(30)
+#define BT_TIMEOUT K_SECONDS(10)
 /* ********** defines ********** */
 
 /* ********** variables ********** */
@@ -118,6 +118,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
 	bt_enabled = true;
+	cts_sync_loop();
 	gfx_bt_set_label(1);
 	LOG_INF("Bluetooth mode enabled...");
 	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
