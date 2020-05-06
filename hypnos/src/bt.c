@@ -52,15 +52,17 @@ static const struct bt_data ad[] = {
         
 static void bt_ready(void)
 {
-        int err;
-
         printk("Bluetooth initialized\n");
 
         if (IS_ENABLED(CONFIG_SETTINGS)) {
                 settings_load();
         }
-        printk("bt_le_adv_start\n");
-        err = bt_le_adv_start(BT_LE_ADV_CONN_NAME, ad, ARRAY_SIZE(ad), NULL, 0);
+}
+
+void bt_adv_start()
+{
+	printk("bt_le_adv_start\n");
+	int err = bt_le_adv_start(BT_LE_ADV_CONN_NAME, ad, ARRAY_SIZE(ad), NULL, 0);
         if (err) {
                 printk("Advertising failed to start (err %d)\n", err);
                 return;
@@ -71,14 +73,24 @@ static void bt_ready(void)
 
 void bt_init(void)
 {
-	int err;
-
-        err = bt_enable(NULL);
+        int err = bt_enable(NULL);
         if (err) {
                 printk("Bluetooth init failed (err %d)\n", err);
                 return;
         }
 
         bt_ready();
+	bt_adv_start();
         cts_sync_init();
+}
+
+void bt_adv_stop(void)
+{
+	k_sleep(K_MSEC(400));
+
+	int err = bt_le_adv_stop();
+	if (err) {
+		printk("Advertising failed to stop (err %d)\n", err);
+		return;
+	}
 }

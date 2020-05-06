@@ -38,7 +38,7 @@ void gfx_init(void)
 	/* Bluetooth label */
 	bt_label = lv_label_create(lv_scr_act(), NULL);
 	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	lv_label_set_text(bt_label, "");
+	lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
 
 	/* Time label */
 	time_label = lv_label_create(lv_scr_act(), NULL);

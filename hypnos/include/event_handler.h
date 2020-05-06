@@ -20,5 +20,9 @@ void clock_tick_isr(struct k_timer *);
 void button_pressed_isr(struct device *, struct gpio_callback *, u32_t);
 void touch_tap_isr(struct device *, struct sensor_trigger *);
 bool bt_mode(void);
+void main_thread(void);
+void bt_thread(void);
+void bt_on(void);
+void bt_off(void);
 
 #endif /* EVENT_HANDLER */
