@@ -21,24 +21,28 @@ manifest:
 
   remotes:
     - name: pinetime
-      url-base: https://github.com/zephyrproject-rtos/
+      url-base: https://github.com/zephyrproject-rtos
 
   # The list of external projects for the Pinetime.
   #
   projects:
+    - name: cmsis
+      path: modules/hal/cmsis
+      revision: 542b2296e6d515b265e25c6b7208e8fea3014f90
     - name: hal_nordic
       path: modules/hal/nordic
-      remote: pinetime
-      revision: 12d7647870888e4cb0e421f2b26884c2e76915ac
+      revision: e1168a2f3290f5ca17ec0c47efbf6c601c60108a
     - name: lvgl
-      revision: 74fc2e753a997bd71cefa34dd9c56dcb954b42e2
       path: modules/lib/gui/lvgl
+      revision: 74fc2e753a997bd71cefa34dd9c56dcb954b42e2
     - name: segger
-      revision: 6fcf61606d6012d2c44129edc033f59331e268bc
       path: modules/debug/segger
+      revision: 6fcf61606d6012d2c44129edc033f59331e268bc
+    - name: tinycrypt
+      path: modules/crypto/tinycrypt
+      revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
     - name: zephyr
       west-commands: scripts/west-commands.yml
-      revision: 219d9fc08298cc99339fab9130c2cf299a3a3301
-
+      revision: 0b1ef3f6bcea2041170a412001698537361dcbbb
   self:
     path: pinetime
