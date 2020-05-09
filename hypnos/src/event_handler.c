@@ -38,9 +38,9 @@
 K_SEM_DEFINE(enable_bt_sem, 0, 1);
 K_SEM_DEFINE(disable_bt_sem, 0, 1);
 K_THREAD_DEFINE(clock_sync_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
-                PRIORITY, 0, K_NO_WAIT);
+                PRIORITY, 0, 0);
 K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
-                PRIORITY, 0, K_NO_WAIT);
+                PRIORITY, 0, 0);
 /* ********** defines ********** */
 
 /* ********** variables ********** */
@@ -99,11 +99,11 @@ void event_handler_init()
         k_timer_start(&battery_percentage_timer, BAT_PERCENTAGE_READ_INTERVAL,
 		      BAT_PERCENTAGE_READ_INTERVAL);
 	k_timer_start(&clock_tick_timer, K_SECONDS(1), K_SECONDS(1));
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 
 	/* Special cases */
         /* Get battery charging status */
-	k_sleep(10);
+	k_sleep(K_MSEC(10));
         u32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
         battery_update_charging_status(res != 1U);
 
@@ -131,13 +131,13 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_
 	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 }
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 	bt_on();
 }
 
@@ -151,7 +151,7 @@ void clock_tick_isr(struct k_timer *tick)
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, 0);
+	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 }
 
 void bt_off_isr(struct k_timer *bt)
@@ -171,7 +171,7 @@ bool bt_mode(void)
 void bt_on(void)
 {
 	bt_enabled = true;
-	k_timer_start(&bt_off_timer, BT_TIMEOUT, 0);
+	k_timer_start(&bt_off_timer, BT_TIMEOUT, K_NO_WAIT);
 	k_sem_give(&enable_bt_sem);
 }
 
@@ -201,7 +201,7 @@ void main_thread(void)
 		lv_task_handler();
 		bt_adv_stop();
 		while (true) {
-			k_sleep(1);
+			k_sleep(K_MSEC(1));
 			k_cpu_idle();
 			lv_task_handler();
 			if (bt_enabled)
@@ -223,7 +223,7 @@ void bt_thread(void)
 		cts_sync_loop();
 		while (true) {
 			clock_sync_time();
-			k_sleep(10);
+			k_sleep(K_MSEC(10));
 			if (!bt_enabled) {
 				goto await_enable_bt;
 			}

@@ -22,15 +22,6 @@ config SPI_0
 
 endif # SPI
 
-
-
-if PWM
-
-config PWM_0
-	default y
-
-endif # PWM
-
 config BT_CTLR
 	default BT
 
