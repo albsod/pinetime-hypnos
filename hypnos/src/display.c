@@ -19,11 +19,31 @@ static struct device *display_dev;
 void display_init(void)
 {
 	display_dev = device_get_binding(CONFIG_LVGL_DISPLAY_DEV_NAME);
+	display_blanking_off(display_dev);
 	LOG_DBG("Display init: Done");
 }
 
-void display_disable_blanking(void)
+void display_sleep(void)
 {
-	display_blanking_off(display_dev);
+	(void)device_set_power_state(display_dev, DEVICE_PM_LOW_POWER_STATE, NULL,
+				     NULL);
+#ifdef CONFIG_LOG
+	int power_state = 0;
+	(void)device_get_power_state(display_dev, &power_state);
+	LOG_INF("Display power state: %u", power_state);
+#endif
 }
+
+void display_wake_up(void)
+{
+	(void)device_set_power_state(display_dev, DEVICE_PM_ACTIVE_STATE, NULL,
+				     NULL);
+#ifdef CONFIG_LOG
+	int power_state = 0;
+	(void)device_get_power_state(display_dev, &power_state);
+	LOG_INF("Display power state: %u", power_state);
+#endif
+}
+
+
 /* ********** ********** ********** ********** ********** */
