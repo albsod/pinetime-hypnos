@@ -119,6 +119,7 @@ void event_handler_init()
 void backlight_off_isr(struct k_timer *light_off)
 {
 	backlight_enable(false);
+	display_sleep();
 }
 
 void battery_percentage_isr(struct k_timer *bat)
@@ -138,6 +139,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 {
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
+	display_wake_up();
 	bt_on();
 }
 
@@ -152,6 +154,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
+	display_wake_up();
 }
 
 void bt_off_isr(struct k_timer *bt)

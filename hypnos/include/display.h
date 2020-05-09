@@ -8,6 +8,7 @@
 #define DISPLAY__H
 
 void display_init(void);
-void display_disable_blanking(void);
+void display_sleep(void);
+void display_wake_up(void);
 
 #endif /* DISPLAY__H */

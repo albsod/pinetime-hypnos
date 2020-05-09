@@ -29,7 +29,6 @@ void main(void)
 	event_handler_init();
 
 	lv_task_handler();
-	display_disable_blanking();
 	bt_on();
 	
 	while (true) {
