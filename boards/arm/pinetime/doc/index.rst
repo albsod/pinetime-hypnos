@@ -6,12 +6,13 @@ pinetime
 Overview
 ********
 
-The pinetime is a fully open-source, watch 
-development kit for Bluetooth® low energy, ANT and 2.4GHz proprietary
-applications using the nRF52832 SoC.
+PineTime Hypnos is a Free Software firmware for the nRF52832-based
+PineTime smartwatch devkit.
 
-The watch contains a battery, touchscreen, accel sensor, heart rate sensor.
-
+The devkit contains, among other things, a battery, touch screen, vibrator and BLE
+(see https://wiki.pine64.org/index.php/PineTime). Some of the hardware components,
+such as the accelerometer, have not yet been enabled in the firmware.
+Contributions are welcome!
 
 
 References
