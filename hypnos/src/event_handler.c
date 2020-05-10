@@ -45,7 +45,6 @@ K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
 
 /* ********** variables ********** */
 static struct k_timer battery_percentage_timer;
-static struct k_timer clock_tick_timer;
 static struct k_timer backlight_off_timer;
 static struct k_timer bt_off_timer;
 static struct device *charging_dev;
@@ -91,14 +90,12 @@ void event_handler_init()
 	/* Initialize timers */
         k_timer_init(&battery_percentage_timer,
 		     battery_percentage_isr, NULL);
-	k_timer_init(&clock_tick_timer, clock_tick_isr, NULL);
 	k_timer_init(&backlight_off_timer, backlight_off_isr, NULL);
 	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
 
 	/* Start timers */
         k_timer_start(&battery_percentage_timer, BAT_PERCENTAGE_READ_INTERVAL,
 		      BAT_PERCENTAGE_READ_INTERVAL);
-	k_timer_start(&clock_tick_timer, K_SECONDS(1), K_SECONDS(1));
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 
 	/* Special cases */
@@ -135,19 +132,21 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 }
 
+void update_time_and_battery_status(void)
+{
+	clock_increment_local_time();
+	clock_show_time();
+	battery_show_status();
+	lv_task_handler();
+}
+
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
 {
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
+	update_time_and_battery_status();
 	bt_on();
-}
-
-void clock_tick_isr(struct k_timer *tick)
-{
-	clock_increment_local_time();
-	clock_show_time();
-	battery_show_status();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
@@ -155,6 +154,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
+	update_time_and_battery_status();
 }
 
 void bt_off_isr(struct k_timer *bt)
@@ -204,11 +204,11 @@ void main_thread(void)
 		lv_task_handler();
 		bt_adv_stop();
 		while (true) {
-			k_sleep(K_MSEC(1));
-			k_cpu_idle();
-			lv_task_handler();
-			if (bt_enabled)
+			k_sleep(K_MSEC(10));
+			if (bt_enabled) {
 				goto await_disable_bt;
+			}
+			k_cpu_idle();
 		}
 	}
 }
@@ -226,10 +226,10 @@ void bt_thread(void)
 		cts_sync_loop();
 		while (true) {
 			clock_sync_time();
-			k_sleep(K_MSEC(10));
 			if (!bt_enabled) {
 				goto await_enable_bt;
 			}
+			k_sleep(K_MSEC(10));
 		}
 	}
 }
