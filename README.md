@@ -15,21 +15,19 @@ and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-
 ## Features
 
 - [x] 100 % Free Software
-- [x] Touch sensor: tap to light up the display
+- [x] Low power consumption: 1.38 mA in idle mode (1.28 mA with the heart rate sensor disconnected), which gives a battery life of more than five days.
+- [x] Battery status: get state of charge and whether it's charging
 - [x] Clock: accurately increment current time
-- [x] Build date and current time of host machine into the firmware image
-- [x] Battery: get state of charge and whether it's charging
-- [x] Graphics: show background image, time, date, battery and bluetooth status using LittlevGL
-- [x] Set current time from bluetooth-connected device
-- [x] Button: press to start time syncronization
+- [x] Button: press to start time synchronization with Bluetooth-connected device
+- [x] Touch sensor: tap to light up the display
+- [x] Graphics: show background image, time, date, battery and Bluetooth status using LittlevGL
 - [x] Optional debug output via JLink RTT
+- [ ] Show notifications from Bluetooth-connected device
 - [ ] Set alarm
-- [ ] Show notifications from bluetooth-connected device
-- [ ] Firmware update over bluetooth
-- [ ] Quick glance via lift-to-wake
 - [ ] Wrist vibration
-- [ ] Step counting
-
+- [ ] Firmware update over Bluetooth
+- [ ] Quick glance via lift-to-wake (requires a free driver for the accelerometer)
+- [ ] Step counting (see above)
 
 ## Getting started
 
