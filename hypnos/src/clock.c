@@ -20,6 +20,9 @@
 static time_t local_time;
 static char time_label_str[32];
 static char date_label_str[32];
+static u64_t uptime_ms;
+static u64_t last_uptime_ms;
+static u64_t elapsed_time_ms;
 
 static struct tm ti = {
 	.tm_sec = 0,
@@ -74,7 +77,10 @@ char *clock_get_local_time()
 /* Called by event handler */
 void clock_increment_local_time()
 {
-	local_time++;
+	uptime_ms = k_uptime_get();
+	elapsed_time_ms = uptime_ms - last_uptime_ms;
+	last_uptime_ms = uptime_ms;
+	local_time += elapsed_time_ms / 1000;
 }
 
 void clock_show_time()
@@ -94,10 +100,6 @@ void clock_show_time()
 	sprintf(date_label_str, "%s %d %s", wday,
 		localtime(&local_time)->tm_mday, mon);
 
-	/* Make the hours:minutes separator blink to represent seconds */
-	if (local_time % 2) {
-		time_label_str[2] = ' ';
-	}
 	gfx_time_set_label(time_label_str);
 	gfx_date_set_label(date_label_str);
 }
