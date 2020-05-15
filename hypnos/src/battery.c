@@ -25,7 +25,7 @@
 /* ********** ********** VARIABLES ********** ********** */
 static struct device* percentage_dev;
 static s16_t data[1];
-static uint32_t battery_percentage;
+static uint32_t percentage;
 static bool charging;
 /* ********** ********** ********** ********** ********** */
 
@@ -85,17 +85,12 @@ void battery_update_percentage()
 {
 	adc_read(percentage_dev, &sequence);
 	uint32_t mv = battery_raw_to_mv(data[0]);
-	battery_percentage = battery_mv_to_ppt(mv)/100;
+	percentage = battery_mv_to_ppt(mv)/100;
 }
 
 void battery_update_charging_status(bool value)
 {
 	charging = value;
-}
-
-uint8_t battery_get_percentage()
-{
-        return battery_percentage;
 }
 
 bool battery_get_charging_status()
@@ -135,7 +130,7 @@ uint32_t battery_mv_to_ppt(uint32_t mv)
 
 void battery_show_status()
 {
-	uint8_t percentage = battery_get_percentage();
+	battery_update_percentage();
 	if (charging) {
 		LOG_INF("Battery status: %u%% (charging)",
 			percentage);
