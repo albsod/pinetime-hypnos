@@ -134,7 +134,6 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_
 
 void update_time_and_battery_status(void)
 {
-	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
 	lv_task_handler();
@@ -145,6 +144,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
+	gfx_bt_set_label(1);
 	update_time_and_battery_status();
 	bt_on();
 }
@@ -154,6 +154,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	backlight_enable(true);
 	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
+	clock_increment_local_time();
 	update_time_and_battery_status();
 }
 
@@ -200,12 +201,12 @@ void main_thread(void)
 	await_disable_bt:
 		bt_await_off();
 		LOG_INF("Exiting bluetooth mode...");
-		gfx_bt_set_label(0);
-		lv_task_handler();
 		bt_adv_stop();
 		while (true) {
 			k_sleep(K_MSEC(10));
 			if (bt_enabled) {
+				gfx_bt_set_label(1);
+				lv_task_handler();
 				goto await_disable_bt;
 			}
 			k_cpu_idle();
@@ -219,14 +220,14 @@ void bt_thread(void)
 	await_enable_bt:
 		bt_await_on();
 		LOG_INF("Entering bluetooth mode...");
-		gfx_bt_set_label(1);
-		lv_task_handler();
 		// FIXME: don't do this if already started during init
 		bt_adv_start();
 		cts_sync_loop();
 		while (true) {
 			clock_sync_time();
 			if (!bt_enabled) {
+				gfx_bt_set_label(0);
+				lv_task_handler();
 				goto await_enable_bt;
 			}
 			k_sleep(K_MSEC(10));
