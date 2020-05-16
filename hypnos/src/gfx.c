@@ -5,6 +5,7 @@
  */
 
 #include <lvgl.h>
+#include "log.h"
 
 /* ********** defines ********** */
 #define LV_IMG_DECLARE(var_name) extern const lv_img_dsc_t var_name;
@@ -27,7 +28,7 @@ void gfx_init(void)
 	/* Background image Night and Sleep (public domain)
 	 * See https://en.wikipedia.org/wiki/Night_and_Sleep
 	 */
-	lv_obj_t * img_bin = lv_img_create(lv_scr_act(), NULL);
+	lv_obj_t *img_bin = lv_img_create(lv_scr_act(), NULL);
 	lv_img_set_src(img_bin, &evelyn);
 
 	/* Battery label */
@@ -38,7 +39,7 @@ void gfx_init(void)
 	/* Bluetooth label */
 	bt_label = lv_label_create(lv_scr_act(), NULL);
 	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
+	lv_label_set_text(bt_label, "");
 
 	/* Time label */
 	time_label = lv_label_create(lv_scr_act(), NULL);
@@ -51,7 +52,15 @@ void gfx_init(void)
 	lv_label_set_style(date_label, LV_LABEL_STYLE_MAIN, &lv_style_plain);
 	lv_label_set_text(date_label, "Mon 10 Jan");
 	lv_obj_align(date_label, time_label, LV_ALIGN_CENTER, 0, 26);
+	LOG_DBG("Graphics init: Done");
+
 }
+
+void gfx_update(void)
+{
+	lv_task_handler();
+}
+
 
 void gfx_time_set_label(char *str)
 {
