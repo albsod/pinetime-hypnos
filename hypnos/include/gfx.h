@@ -13,6 +13,5 @@ void gfx_bt_set_label(int);
 void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
 void gfx_update(void);
-void lv_task_handler(void);
 
 #endif /* GFX__H */
