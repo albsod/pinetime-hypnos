@@ -14,8 +14,7 @@ PO.23 LCD backlight
 
 / {
 	model = "pinetime open source watch";
-	compatible = "nordic,nrf52832-qfaa",
-		     "nordic,nrf52832";
+	compatible = "nrf52832";
 
 	chosen {
 		zephyr,sram = &sram0;
