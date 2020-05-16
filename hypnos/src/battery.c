@@ -77,7 +77,6 @@ void battery_status_init()
                 LOG_ERR("Failed to setup channel for adc!");
         }
 
-	battery_update_percentage();
         LOG_DBG("Battery status init: Done");
 }
 

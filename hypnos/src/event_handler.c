@@ -12,10 +12,10 @@
 #include "battery.h"
 #include "bt.h"
 #include "clock.h"
+#include "display.h"
 #include "event_handler.h"
 #include "gfx.h"
 #include "log.h"
-#include "cts_sync.h"
 
 /* ********** defines ********** */
 #define BAT_CHA 12
@@ -25,25 +25,13 @@
 #define EDGE    (GPIO_INT_EDGE | GPIO_INT_DOUBLE_EDGE)
 #define PULL_UP DT_ALIAS_SW0_GPIOS_FLAGS
 #define TOUCH_PORT DT_INST_0_HYNITRON_CST816S_LABEL
-#define BACKLIGHT_TIMEOUT K_SECONDS(5)
-#define BT_TIMEOUT K_SECONDS(10)
+#define DISPLAY_TIMEOUT K_SECONDS(5)
+#define BT_TIMEOUT K_SECONDS(20)
 
-/* size of stack area used by threads */
-#define STACKSIZE 1024
-
-/* scheduling priority used by each thread */
-#define PRIORITY 7
-
-K_SEM_DEFINE(enable_bt_sem, 0, 1);
-K_SEM_DEFINE(disable_bt_sem, 0, 1);
-K_THREAD_DEFINE(clock_sync_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
-                PRIORITY, 0, 0);
-K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
-                PRIORITY, 0, 0);
 /* ********** defines ********** */
 
 /* ********** variables ********** */
-static struct k_timer backlight_off_timer;
+static struct k_timer display_off_timer;
 static struct k_timer bt_off_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
@@ -54,17 +42,11 @@ static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
-bool bt_enabled = false;
-
-struct k_sem enable_bt_sem;
-struct k_sem disable_bt_sem;
 /* ********** variables ********** */
 
 /* ********** init function ********** */
 void event_handler_init()
 {
-        // TODO: Check return values for error handling.
-
 	/* Initialize GPIOs */
         charging_dev = device_get_binding("GPIO_0");
         gpio_pin_configure(charging_dev, BAT_CHA, GPIO_INPUT | GPIO_INT_EDGE_BOTH);
@@ -86,11 +68,11 @@ void event_handler_init()
         gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
 	/* Initialize timers */
-	k_timer_init(&backlight_off_timer, backlight_off_isr, NULL);
+	k_timer_init(&display_off_timer, display_off_isr, NULL);
 	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
 
 	/* Start timers */
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
 	/* Special cases */
         /* Get battery charging status */
@@ -106,8 +88,8 @@ void event_handler_init()
 }
 /* ********** init function ********** */
 
-/* ********** handler functions ********** */
-void backlight_off_isr(struct k_timer *light_off)
+/* ********** interrupt handlers ********** */
+void display_off_isr(struct k_timer *light_off)
 {
 	backlight_enable(false);
 	display_sleep();
@@ -118,110 +100,35 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_
 	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
-}
-
-void update_time_and_battery_status(void)
-{
-	clock_show_time();
-	battery_show_status();
-	lv_task_handler();
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 }
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	gfx_bt_set_label(1);
-	update_time_and_battery_status();
+	clock_show_time();
+	battery_show_status();
+	gfx_update();
+	k_timer_start(&bt_off_timer, BT_TIMEOUT, K_NO_WAIT);
 	bt_on();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
 	backlight_enable(true);
-	k_timer_start(&backlight_off_timer, BACKLIGHT_TIMEOUT, K_NO_WAIT);
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	clock_increment_local_time();
-	update_time_and_battery_status();
+	clock_show_time();
+	battery_show_status();
+	gfx_update();
 }
 
 void bt_off_isr(struct k_timer *bt)
 {
 	bt_off();
 }
-
-bool bt_mode(void)
-{
-	return bt_enabled;
-}
-
-/* ********** handler functions ********** */
-
-/* ************* thread functions ***************/
-
-void bt_on(void)
-{
-	bt_enabled = true;
-	k_timer_start(&bt_off_timer, BT_TIMEOUT, K_NO_WAIT);
-	k_sem_give(&enable_bt_sem);
-}
-
-void bt_await_on(void)
-{
-	k_sem_take(&enable_bt_sem, K_FOREVER);
-}
-
-void bt_off(void)
-{
-	bt_enabled = false;
-	k_sem_give(&disable_bt_sem);
-}
-
-void bt_await_off(void)
-{
-	k_sem_take(&disable_bt_sem, K_FOREVER);
-}
-
-void main_thread(void)
-{
-	while (true) {
-	await_disable_bt:
-		bt_await_off();
-		LOG_INF("Exiting bluetooth mode...");
-		bt_adv_stop();
-		while (true) {
-			k_sleep(K_MSEC(10));
-			if (bt_enabled) {
-				gfx_bt_set_label(1);
-				lv_task_handler();
-				goto await_disable_bt;
-			}
-			k_cpu_idle();
-		}
-	}
-}
-
-void bt_thread(void)
-{
-	while (true) {
-	await_enable_bt:
-		bt_await_on();
-		LOG_INF("Entering bluetooth mode...");
-		// FIXME: don't do this if already started during init
-		bt_adv_start();
-		cts_sync_loop();
-		while (true) {
-			clock_sync_time();
-			if (!bt_enabled) {
-				gfx_bt_set_label(0);
-				lv_task_handler();
-				goto await_enable_bt;
-			}
-			k_sleep(K_MSEC(10));
-		}
-	}
-}
-
-/* ***************************************/
+/* ********** interrupt handlers ********** */
