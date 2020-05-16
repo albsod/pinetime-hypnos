@@ -1,28 +1,14 @@
 /*
+ * Copyright (c) 2015-2016 Intel Corporation
  * Copyright (c) 2020 Endian Technologies AB
  *
- * SPDX-License-Identifier: MPL-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
-
-#include <logging/log.h>
-
-#include <device.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <drivers/gpio.h>
-#include <sys/byteorder.h>
-#include <stdlib.h>
-#include <drivers/counter.h>
-
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-
-LOG_MODULE_REGISTER(app);
 
 #include <zephyr/types.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <string.h>
-#include <errno.h>
 #include <sys/byteorder.h>
 #include <zephyr.h>
 
@@ -31,15 +17,14 @@ LOG_MODULE_REGISTER(app);
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
-
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 
 #include "cts_sync.h"
+#include "log.h"
 
 K_SEM_DEFINE(enable_bt_sem, 0, 1);
 K_SEM_DEFINE(disable_bt_sem, 0, 1);
-
 
 /* ********** variables ********** */
 bool bt_enabled = false;
@@ -57,7 +42,6 @@ static const struct bt_data ad[] = {
 		      0x78, 0x56, 0x34, 0x12, 0x78, 0x56, 0x34, 0x12),
 };
 /* ********** variables ********** */
-
         
 static void bt_ready(void)
 {
@@ -105,6 +89,16 @@ void bt_adv_stop(void)
 	}
 }
 
+bool bt_mode(void)
+{
+	return bt_enabled;
+}
+
+bool bt_is_initialized(void)
+{
+	return bt_initialized;
+}
+
 void bt_on(void)
 {
 	bt_enabled = true;
@@ -125,14 +119,4 @@ void bt_off(void)
 void bt_await_off(void)
 {
 	k_sem_take(&disable_bt_sem, K_FOREVER);
-}
-
-bool bt_mode(void)
-{
-	return bt_enabled;
-}
-
-bool bt_is_initialized(void)
-{
-	return bt_initialized;
 }

@@ -114,7 +114,7 @@ static void connected(struct bt_conn *conn, u8_t err)
 	cts_sync_processor(conn, NULL);
 }
 
-// TODO: Remove, replace or fill it with something
+/* TODO: Remove, replace or fill it with something */
 static void disconnected(struct bt_conn *conn, u8_t reason)
 {
 }
