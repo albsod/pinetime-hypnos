@@ -7,7 +7,7 @@
 #ifndef BATTERY__H
 #define BATTERY__H
 
-void battery_status_init();
+void battery_init();
 void battery_update_percentage();
 void battery_update_charging_status(bool);
 bool battery_get_charging_status();

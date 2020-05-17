@@ -27,8 +27,7 @@
 #define TOUCH_PORT CONFIG_CST816S_NAME
 #define DISPLAY_TIMEOUT K_SECONDS(5)
 #define BT_TIMEOUT K_SECONDS(20)
-
-/* ********** defines ********** */
+/* ********** ******* ********** */
 
 /* ********** variables ********** */
 static struct k_timer display_off_timer;
@@ -42,7 +41,7 @@ static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
-/* ********** variables ********** */
+/* ********** ********* ********** */
 
 /* ********** init function ********** */
 void event_handler_init()
@@ -86,7 +85,7 @@ void event_handler_init()
 
 	LOG_DBG("Event handler init: Done");
 }
-/* ********** init function ********** */
+/* ********** ************ ********** */
 
 /* ********** interrupt handlers ********** */
 void display_off_isr(struct k_timer *light_off)
@@ -95,12 +94,15 @@ void display_off_isr(struct k_timer *light_off)
 	display_sleep();
 }
 
+void bt_off_isr(struct k_timer *bt)
+{
+	bt_off();
+}
+
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
 {
 	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
-	backlight_enable(true);
-	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 }
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
@@ -127,8 +129,4 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	gfx_update();
 }
 
-void bt_off_isr(struct k_timer *bt)
-{
-	bt_off();
-}
-/* ********** interrupt handlers ********** */
+/* ********** ************** ********** */

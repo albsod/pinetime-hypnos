@@ -66,7 +66,7 @@ static const struct adc_channel_cfg m_1st_channel_cfg = {
 /* ********** ********** ********** ********** ********** */
 
 /* ********** ********** FUNCTIONS ********** ********** */
-void battery_status_init()
+void battery_init()
 {
         percentage_dev = device_get_binding("ADC_0");
         if (percentage_dev == NULL) {

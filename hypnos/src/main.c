@@ -25,7 +25,7 @@ void bt_thread(void);
 #define STACKSIZE 1024
 #define PRIORITY 7
 
-K_THREAD_DEFINE(clock_sync_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
+K_THREAD_DEFINE(bt_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
                 PRIORITY, 0, 0);
 K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
                 PRIORITY, 0, 0);
@@ -38,7 +38,7 @@ void main(void)
 
 	gfx_init();
 	clock_init();
-	battery_status_init();
+	battery_init();
 	display_init();
 	event_handler_init();
 	gfx_update();
