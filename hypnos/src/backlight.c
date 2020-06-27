@@ -10,8 +10,8 @@
 #include "log.h"
 
 /* ********** ********** DEFINES ********** ********** ********** */
-#define BACKLIGHT_PORT  DT_ALIAS_LED1_GPIOS_CONTROLLER
-#define BACKLIGHT       DT_ALIAS_LED1_GPIOS_PIN
+#define BACKLIGHT_PORT  DT_GPIO_LABEL(DT_ALIAS(led1), gpios)
+#define BACKLIGHT       DT_GPIO_PIN(DT_ALIAS(led1), gpios)
 /* ********** **********  ********** ********** ********** */
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
