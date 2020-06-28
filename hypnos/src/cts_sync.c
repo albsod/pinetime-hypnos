@@ -1,6 +1,5 @@
 /*
- * Modifications of najnesnaj's clock-cts sample:
- * Copyright (c) 2020 Endian Technologies AB
+ * This file was copied from Dejvino's PineTime Hermes firmware
  *
  * SPDX-License-Identifier: Apache-2.0
  */
