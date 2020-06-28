@@ -12,7 +12,6 @@
 
 void event_handler_init(void);
 void display_off_isr(struct k_timer *);
-void bt_off_isr(struct k_timer *);
 void battery_percentage_isr(struct k_timer *);
 void battery_charging_isr(struct device*, struct gpio_callback *, u32_t);
 void button_pressed_isr(struct device *, struct gpio_callback *, u32_t);

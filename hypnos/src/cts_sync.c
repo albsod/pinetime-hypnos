@@ -35,12 +35,13 @@ static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 	clock_datetime.minutes = cts_datetime->minutes;
 	clock_datetime.seconds = cts_datetime->seconds;
 
+	/* Update date and time in clock module */
+	clock_sync_time();
 	LOG_INF("CTS sync to clock complete.");
-
 	time_sync_timeout = TIME_SYNC_WAIT;
 }
 
-void cts_get_datetime(struct tm *t)
+void cts_update_datetime(struct tm *t)
 {
 	t->tm_year = clock_datetime.year -1900;
 	t->tm_mon = clock_datetime.month -1;
@@ -113,9 +114,9 @@ static void connected(struct bt_conn *conn, u8_t err)
 	cts_sync_processor(conn, NULL);
 }
 
-/* TODO: Remove, replace or fill it with something */
 static void disconnected(struct bt_conn *conn, u8_t reason)
 {
+	LOG_INF("Disconnected (reason %u)", reason);
 }
 
 static struct bt_conn_cb conn_callbacks = {

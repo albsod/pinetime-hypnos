@@ -31,7 +31,6 @@
 
 /* ********** variables ********** */
 static struct k_timer display_off_timer;
-static struct k_timer bt_off_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
@@ -68,7 +67,6 @@ void event_handler_init()
 
 	/* Initialize timers */
 	k_timer_init(&display_off_timer, display_off_isr, NULL);
-	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
 
 	/* Start timers */
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
@@ -94,11 +92,6 @@ void display_off_isr(struct k_timer *light_off)
 	display_sleep();
 }
 
-void bt_off_isr(struct k_timer *bt)
-{
-	bt_off();
-}
-
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
 {
 	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
@@ -110,12 +103,17 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
-	gfx_bt_set_label(1);
 	clock_show_time();
 	battery_show_status();
-	gfx_update();
-	k_timer_start(&bt_off_timer, BT_TIMEOUT, K_NO_WAIT);
-	bt_on();
+	if (bt_mode()) {
+		gfx_bt_set_label(0);
+		gfx_update();
+		bt_off();
+	} else {
+		gfx_bt_set_label(1);
+		gfx_update();
+		bt_on();
+	}
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)

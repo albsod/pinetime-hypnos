@@ -58,15 +58,16 @@ void clock_init()
 	LOG_DBG("Clock init: Done");
 }
 
-struct tm *clock_get_time()
-{
-	return &ti;
-}
-
+/* Called by cts sync */
 void clock_sync_time(void)
 {
-	cts_get_datetime(&ti);
+	cts_update_datetime(&ti);
 	local_time = mktime(&ti);
+
+	/* Flush the time incrementer */
+	uptime_ms = k_uptime_get();
+	elapsed_time_ms = uptime_ms - last_uptime_ms;
+	last_uptime_ms = uptime_ms;
 }
 
 char *clock_get_local_time()
