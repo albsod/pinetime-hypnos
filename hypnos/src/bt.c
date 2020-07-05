@@ -29,6 +29,7 @@ K_SEM_DEFINE(disable_bt_sem, 0, 1);
 /* ********** variables ********** */
 bool bt_enabled = false;
 bool bt_initialized = false;
+bool bt_toggle_lock = false;
 
 struct k_sem enable_bt_sem;
 struct k_sem disable_bt_sem;
@@ -99,9 +100,19 @@ bool bt_is_initialized(void)
 	return bt_initialized;
 }
 
+bool bt_toggle_is_locked(void)
+{
+	if (bt_toggle_lock) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void bt_on(void)
 {
 	bt_enabled = true;
+	bt_toggle_lock = true;
 	k_sem_give(&enable_bt_sem);
 }
 
@@ -110,9 +121,15 @@ void bt_await_on(void)
 	k_sem_take(&enable_bt_sem, K_FOREVER);
 }
 
+void bt_toggle_unlock(void)
+{
+	bt_toggle_lock = false;
+}
+
 void bt_off(void)
 {
 	bt_enabled = false;
+	bt_toggle_lock = true;
 	k_sem_give(&disable_bt_sem);
 }
 

@@ -11,6 +11,8 @@ void bt_adv_start(void);
 void bt_adv_stop(void);
 void bt_on(void);
 void bt_off(void);
+void bt_toggle_unlock(void);
+bool bt_toggle_is_locked(void);
 void bt_await_on(void);
 void bt_await_off(void);
 

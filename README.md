@@ -15,10 +15,10 @@ and is inspired by [PineTime Hermes](https://github.com/Dejvino/pinetime-hermes-
 ## Features
 
 - [x] 100 % Free Software
-- [x] Low power consumption: 1.38 mA in idle mode (1.28 mA with the heart rate sensor disconnected), which gives a battery life of more than five days.
+- [x] Low power consumption: 1.38 mA in idle mode (1.28 mA with the heart rate sensor disconnected), which gives a battery life of about one week.
 - [x] Battery status: get state of charge and whether it's charging
 - [x] Clock: accurately increment current time
-- [x] Button: press to start time synchronization with Bluetooth-connected device
+- [x] Button: press to toggle time synchronization with Bluetooth-connected device
 - [x] Touch sensor: tap to light up the display
 - [x] Graphics: show background image, time, date, battery and Bluetooth status using LittlevGL
 - [x] Optional debug output via JLink RTT
@@ -58,7 +58,7 @@ $ west flash
 
 ## Copying
 
-The Hypnos application is under the Mozilla Public License 2.0 and
+The Hypnos application is mostly under the Mozilla Public License 2.0 and
 the documentation, including this README, is CC BY-SA 4.0 or any later version.
 
 Everything else should be under Apache 2.0, MIT/Expat, 3-clause BSD or similar

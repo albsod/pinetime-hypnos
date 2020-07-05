@@ -29,6 +29,8 @@ K_THREAD_DEFINE(bt_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
                 PRIORITY, 0, 0);
 K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
                 PRIORITY, 0, 0);
+
+#define SLEEP_TIME K_MSEC(10)
 /* ******** thread function declarations and defines ******** */
 
 void main(void)
@@ -61,7 +63,7 @@ void main_thread(void)
 		bt_await_off();
 		bt_adv_stop();
 		while (true) {
-			k_sleep(K_MSEC(10));
+			k_sleep(SLEEP_TIME);
 			if (bt_mode()) {
 				gfx_bt_set_label(1);
 				gfx_update();
@@ -82,18 +84,18 @@ void bt_thread(void)
 			bt_adv_start();
 		} else {
 			bt_init();
-			k_sleep(K_MSEC(10));
+			k_sleep(SLEEP_TIME);
 		}
 		cts_sync_loop();
 		while (true) {
-			clock_sync_time();
+			k_sleep(SLEEP_TIME);
 			if (!bt_mode()) {
 				LOG_INF("Exiting bluetooth mode...");
 				gfx_bt_set_label(0);
 				gfx_update();
 				goto await_enable_bt;
 			}
-			k_sleep(K_MSEC(10));
+			k_cpu_idle();
 		}
 	}
 }

@@ -26,12 +26,12 @@
 #define PULL_UP DT_GPIO_FLAGS(DT_ALIAS(sw0), gpios)
 #define TOUCH_PORT CONFIG_CST816S_NAME
 #define DISPLAY_TIMEOUT K_SECONDS(5)
-#define BT_TIMEOUT K_SECONDS(20)
+#define BT_TOGGLE_LOCK_TIMEOUT K_SECONDS(3)
 /* ********** ******* ********** */
 
 /* ********** variables ********** */
 static struct k_timer display_off_timer;
-static struct k_timer bt_off_timer;
+static struct k_timer bt_toggle_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
@@ -68,7 +68,7 @@ void event_handler_init()
 
 	/* Initialize timers */
 	k_timer_init(&display_off_timer, display_off_isr, NULL);
-	k_timer_init(&bt_off_timer, bt_off_isr, NULL);
+	k_timer_init(&bt_toggle_timer, bt_toggle_unlock_isr, NULL);
 
 	/* Start timers */
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
@@ -94,9 +94,9 @@ void display_off_isr(struct k_timer *light_off)
 	display_sleep();
 }
 
-void bt_off_isr(struct k_timer *bt)
+void bt_toggle_unlock_isr(struct k_timer *bt_toggle)
 {
-	bt_off();
+	bt_toggle_unlock();
 }
 
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
@@ -110,12 +110,22 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t 
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
-	gfx_bt_set_label(1);
 	clock_show_time();
 	battery_show_status();
-	gfx_update();
-	k_timer_start(&bt_off_timer, BT_TIMEOUT, K_NO_WAIT);
-	bt_on();
+	if (bt_toggle_is_locked()) {
+		return;
+	}
+	k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
+
+	if (bt_mode()) {
+		gfx_bt_set_label(0);
+		gfx_update();
+		bt_off();
+	} else {
+		gfx_bt_set_label(1);
+		gfx_update();
+		bt_on();
+	}
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)

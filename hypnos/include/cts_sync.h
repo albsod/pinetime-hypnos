@@ -12,7 +12,7 @@
 
 void cts_sync_init(void);
 void cts_sync_loop(void);
-void cts_get_datetime(struct tm *);
+void cts_update_datetime(struct tm *);
 
 typedef struct {
 	uint16_t year;
