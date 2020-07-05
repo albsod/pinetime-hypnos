@@ -19,10 +19,10 @@ LOG_MODULE_REGISTER(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
-	u8_t buf[64];
-	u8_t msb;
-	u8_t lsb;
-	//u8_t id = 0U;
+	uint8_t buf[64];
+	uint8_t msb;
+	uint8_t lsb;
+	//uint8_t id = 0U;
 	__ASSERT_NO_MSG(chan == SENSOR_CHAN_ALL);
 
 	/*
@@ -85,7 +85,7 @@ static const struct sensor_driver_api cst816s_driver_api = {
 int cst816s_init(struct device *dev)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
-	//u8_t id = 0U;
+	//uint8_t id = 0U;
 	drv_data->i2c = device_get_binding(CONFIG_CST816S_I2C_MASTER_DEV_NAME);
 	if (drv_data->i2c == NULL) {
 		LOG_DBG("Could not get pointer to %s device",

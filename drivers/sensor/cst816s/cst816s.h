@@ -18,8 +18,8 @@
 
 struct cst816s_data {
 	struct device *i2c;
-	s16_t x_sample;
-	s16_t y_sample;
+	int16_t x_sample;
+	int16_t y_sample;
 
 #ifdef CONFIG_CST816S_TRIGGER
 	struct device *gpio;

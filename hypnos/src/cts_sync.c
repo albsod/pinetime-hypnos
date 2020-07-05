@@ -53,7 +53,7 @@ void cts_update_datetime(struct tm *t)
 
 int offset = 0;
 cts_datetime_t datetime_buf;
-u8_t cts_sync_read(struct bt_conn *conn, u8_t err,
+uint8_t cts_sync_read(struct bt_conn *conn, uint8_t err,
 				    struct bt_gatt_read_params *params,
 				    const void *data, u16_t length)
 {
@@ -70,7 +70,7 @@ u8_t cts_sync_read(struct bt_conn *conn, u8_t err,
 	return BT_GATT_ITER_CONTINUE;
 }
 
-u8_t cts_sync_service_discovered(struct bt_conn* conn, const struct bt_gatt_attr* attr,
+uint8_t cts_sync_service_discovered(struct bt_conn* conn, const struct bt_gatt_attr* attr,
         struct bt_gatt_discover_params* params)
 {
 	if (!attr) {
@@ -106,7 +106,7 @@ static void cts_sync_processor(struct bt_conn *conn, void *data)
 	}
 }
 
-static void connected(struct bt_conn *conn, u8_t err)
+static void connected(struct bt_conn *conn, uint8_t err)
 {
 	if (err) {
 		return;
@@ -114,7 +114,7 @@ static void connected(struct bt_conn *conn, u8_t err)
 	cts_sync_processor(conn, NULL);
 }
 
-static void disconnected(struct bt_conn *conn, u8_t reason)
+static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
 	LOG_INF("Disconnected (reason %u)", reason);
 }

@@ -31,7 +31,7 @@ int cst816s_attr_set(struct device *dev,
 }
 
 static void cst816s_gpio_callback(struct device *dev,
-		struct gpio_callback *cb, u32_t pins)
+		struct gpio_callback *cb, uint32_t pins)
 {
 	struct cst816s_data *drv_data =
 		CONTAINER_OF(cb, struct cst816s_data, gpio_cb);

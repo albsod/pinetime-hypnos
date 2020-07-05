@@ -62,7 +62,7 @@ void event_handler_init()
 	sensor_trigger_set(touch_dev, &tap, touch_tap_isr);
 
 	/* Set button out pin to high to enable the button */
-	u32_t button_out = 1U;
+	uint32_t button_out = 1U;
         gpio_pin_configure(button_dev, BTN_OUT, GPIO_OUTPUT);
         gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
@@ -76,7 +76,7 @@ void event_handler_init()
 	/* Special cases */
         /* Get battery charging status */
 	k_sleep(K_MSEC(10));
-        u32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
+        uint32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
         battery_update_charging_status(res != 1U);
 
         /* Show time, date and battery status */
@@ -99,13 +99,13 @@ void bt_toggle_unlock_isr(struct k_timer *bt_toggle)
 	bt_toggle_unlock();
 }
 
-void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, u32_t pins)
+void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint32_t pins)
 {
-	u32_t res = gpio_pin_get(charging_dev, BAT_CHA);
+	uint32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
 }
 
-void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, u32_t pins)
+void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
 {
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
