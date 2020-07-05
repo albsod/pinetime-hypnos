@@ -1,5 +1,7 @@
 /*
- * This file was copied from Dejvino's PineTime Hermes firmware
+ * Copyright (c) 2020 Dejvino
+ * Copyright (c) 2020 Endian Technologies AB
+ * Copyright (c) 2020 max00
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -10,35 +12,52 @@
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 #include <time.h>
+#include "gfx.h"
 #include "log.h"
 #include "cts_sync.h"
 
-#define TIME_SYNC_WAIT 60
-int time_sync_timeout = TIME_SYNC_WAIT;
+/* ********** Definitions ********** */
+#define CTS_SYNC_INTERVAL K_SECONDS(60)
+
+/* ********** Function prototypes ********** */
+static void cts_sync_timer_timeout_handler(struct k_timer *);
+static void cts_sync_processor(struct bt_conn *, void *);
+
+/* ********** Variables ********** */
+static struct k_timer m_cts_sync_timer;
 static struct bt_gatt_discover_params cts_discovery_params;
 static struct bt_uuid_16 uuid = BT_UUID_INIT_16(0);
 static struct bt_gatt_read_params read_params;
-
 cts_datetime_t clock_datetime;
+static struct {
+	int offset;
+	cts_datetime_t datetime;
+} m_read_buf;
+
+/* ********** Functions ********** */
+void cts_sync_init()
+{
+	k_timer_init(&m_cts_sync_timer, cts_sync_timer_timeout_handler, NULL);
+}
+
+void cts_sync_enable(bool enable)
+{
+	if (enable) {
+		k_timer_start(&m_cts_sync_timer, K_NO_WAIT, CTS_SYNC_INTERVAL);
+	} else {
+		k_timer_stop(&m_cts_sync_timer);
+	}
+}
 
 static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 {
 	LOG_INF("CTS sync to clock started.\n Y%04d D%03d T%2d:%2d:%2d",
 		cts_datetime->year, cts_datetime->day,
 		cts_datetime->hours, cts_datetime->minutes, cts_datetime->seconds);
-
-	memset(&clock_datetime, 0, sizeof(cts_datetime_t));
-	clock_datetime.year = cts_datetime->year;
-	clock_datetime.month = cts_datetime->month;
-	clock_datetime.day = cts_datetime->day;
-	clock_datetime.hours = cts_datetime->hours;
-	clock_datetime.minutes = cts_datetime->minutes;
-	clock_datetime.seconds = cts_datetime->seconds;
-
-	/* Update date and time in clock module */
-	clock_sync_time();
+	memcpy(&clock_datetime, cts_datetime, sizeof(clock_datetime));
+	clock_sync_time(cts_datetime);
+	gfx_bt_set_label(2);
 	LOG_INF("CTS sync to clock complete.");
-	time_sync_timeout = TIME_SYNC_WAIT;
 }
 
 void cts_update_datetime(struct tm *t)
@@ -51,21 +70,24 @@ void cts_update_datetime(struct tm *t)
 	t->tm_sec = clock_datetime.seconds;
 }
 
-int offset = 0;
-cts_datetime_t datetime_buf;
+static void cts_sync_timer_timeout_handler(struct k_timer *tmr)
+{
+	bt_conn_foreach(BT_CONN_TYPE_LE, cts_sync_processor, NULL);
+}
+
 uint8_t cts_sync_read(struct bt_conn *conn, uint8_t err,
 				    struct bt_gatt_read_params *params,
 				    const void *data, u16_t length)
 {
-	LOG_DBG("Reading CCC data: err %d, %d bytes, offset %d.", err, length, offset);
+	LOG_DBG("Reading CCC data: err %d, %d bytes, offset %d.", err, length, m_read_buf.offset);
 
 	if (!data || length <= 0) {
-		sync_cts_to_clock(&datetime_buf);
+		sync_cts_to_clock(&m_read_buf.datetime);
 		return BT_GATT_ITER_STOP;
 	}
 
-	memcpy(&datetime_buf + offset, data, length);
-	offset += length;
+	memcpy(&m_read_buf.datetime + m_read_buf.offset, data, length);
+	m_read_buf.offset += length;
 
 	return BT_GATT_ITER_CONTINUE;
 }
@@ -84,7 +106,7 @@ uint8_t cts_sync_service_discovered(struct bt_conn* conn, const struct bt_gatt_a
 	read_params.by_uuid.uuid = (struct bt_uuid *) &uuid;
 	read_params.by_uuid.start_handle = attr->handle;
 	read_params.by_uuid.end_handle = 0xffff;
-	offset = 0;
+	m_read_buf.offset = 0;
 	if (bt_gatt_read(conn, &read_params) < 0) {
 		LOG_DBG("Could not initiate read of CCC data.");
 	}
@@ -103,38 +125,5 @@ static void cts_sync_processor(struct bt_conn *conn, void *data)
 
 	if (bt_gatt_discover(conn, &cts_discovery_params) != 0) {
 		LOG_ERR("CTS Sync > GATT discovery FAILED.");
-	}
-}
-
-static void connected(struct bt_conn *conn, uint8_t err)
-{
-	if (err) {
-		return;
-	}
-	cts_sync_processor(conn, NULL);
-}
-
-static void disconnected(struct bt_conn *conn, uint8_t reason)
-{
-	LOG_INF("Disconnected (reason %u)", reason);
-}
-
-static struct bt_conn_cb conn_callbacks = {
-	.connected = connected,
-	.disconnected = disconnected,
-};
-
-void cts_sync_init()
-{
-	bt_conn_cb_register(&conn_callbacks);
-}
-
-void cts_sync_loop()
-{
-	if (time_sync_timeout > 0) {
-		time_sync_timeout--;
-	} else {
-		bt_conn_foreach(BT_CONN_TYPE_ALL, cts_sync_processor, NULL);
-		time_sync_timeout = TIME_SYNC_WAIT;
 	}
 }

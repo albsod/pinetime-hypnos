@@ -57,9 +57,15 @@ void clock_init()
 }
 
 /* Called by cts sync */
-void clock_sync_time(void)
+void clock_sync_time(cts_datetime_t *cts)
 {
-	cts_update_datetime(&ti);
+	ti.tm_year = cts->year -1900;
+	ti.tm_mon = cts->month -1;
+	ti.tm_mday = cts->day;
+	ti.tm_hour = cts->hours;
+	ti.tm_min = cts->minutes;
+	ti.tm_sec = cts->seconds;
+
 	local_time = mktime(&ti);
 
 	/* Flush the time incrementer */

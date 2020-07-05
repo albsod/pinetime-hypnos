@@ -53,7 +53,6 @@ void gfx_init(void)
 	lv_label_set_text(date_label, "Mon 10 Jan");
 	lv_obj_align(date_label, time_label, LV_ALIGN_CENTER, 0, 26);
 	LOG_DBG("Graphics init: Done");
-
 }
 
 void gfx_update(void)
@@ -74,9 +73,14 @@ void gfx_date_set_label(char *str)
 
 void gfx_bt_set_label(int symbol)
 {
-	if (symbol) {
+	switch (symbol) {
+	case 1:
+		lv_label_set_text(bt_label, LV_SYMBOL_WIFI);
+		break;
+	case 2:
 		lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
-	} else {
+		break;
+	default:
 		lv_label_set_text(bt_label, "");
 	}
 }
