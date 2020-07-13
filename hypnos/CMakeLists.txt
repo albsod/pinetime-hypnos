@@ -15,7 +15,7 @@ ELSE()
   set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf ${CMAKE_CURRENT_LIST_DIR}/logging.conf)
 ENDIF()
 
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 include_directories(include)
 project(hypnos)
 
@@ -23,11 +23,7 @@ FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})
 
 # Get current time
-execute_process(
-  COMMAND date --iso-8601=seconds # e.g. 2020-04-04T14:17:34+02:00
-  OUTPUT_VARIABLE CURRENT_TIME
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+string(TIMESTAMP CURRENT_TIME %Y-%m-%dT%H:%M:%S)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCURRENT_TIME_OF_BUILD=\"${CURRENT_TIME}\"")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include clock.h")
