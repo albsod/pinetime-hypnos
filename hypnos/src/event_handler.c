@@ -110,6 +110,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
+	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
 	if (bt_toggle_is_locked()) {
@@ -119,13 +120,12 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 
 	if (bt_mode()) {
 		gfx_bt_set_label(0);
-		gfx_update();
 		bt_off();
 	} else {
 		gfx_bt_set_label(1);
-		gfx_update();
 		bt_on();
 	}
+	gfx_update();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
