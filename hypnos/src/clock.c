@@ -32,17 +32,15 @@ static struct tm ti = {
 	.tm_mon = 0,
 	.tm_year = 0,
 	.tm_wday = 0,
-	.tm_isdst = 0,
 };
 /* ********** ********** ********** ********** ********** ********** */
 
 /* ********** ********** FUNCTIONS ********** ********** */
 void clock_str_to_local_time(const char *str, struct tm *t)
 {
-        /* Date and time format: 2020-04-04T20:48:11+02:00 */
-	if (sscanf(str, "%d-%d-%dT%d:%d:%d+%d", &t->tm_year, &t->tm_mon,
-		   &t->tm_mday, &t->tm_hour, &t->tm_min, &t->tm_sec,
-		   &t->tm_isdst) != 7) {
+        /* Date and time format: 2020-04-04T20:48:11 */
+	if (sscanf(str, "%d-%d-%dT%d:%d:%d", &t->tm_year, &t->tm_mon,
+		   &t->tm_mday, &t->tm_hour, &t->tm_min, &t->tm_sec) != 6) {
 		LOG_ERR("Failed to parse time of build!");
 	}
 	t->tm_year-=1900;
