@@ -8,6 +8,7 @@
 #define CLOCK__H
 
 #include <time.h>
+#include <cts_sync.h>
 
 /* Stringify build time included by cmake */
 #define _xstr(s) _str(s)
@@ -19,7 +20,7 @@ void clock_init(void);
 void clock_increment_local_time(void);
 char *clock_get_local_time(void);
 struct tm *clock_get_time(void);
-void clock_sync_time(void);
+void clock_sync_time(cts_datetime_t *cts);
 void clock_show_time(void);
 
 #endif /* CLOCK__H */

@@ -119,10 +119,10 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 	k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
 
 	if (bt_mode()) {
-		gfx_bt_set_label(0);
+		gfx_bt_set_label(BT_ADVERTISING_OFF);
 		bt_off();
 	} else {
-		gfx_bt_set_label(1);
+		gfx_bt_set_label(BT_ADVERTISING_ON);
 		bt_on();
 	}
 	gfx_update();

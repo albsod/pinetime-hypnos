@@ -133,21 +133,21 @@ void battery_show_status()
 	if (charging) {
 		LOG_INF("Battery status: %u%% (charging)",
 			percentage);
-		gfx_battery_set_label(5);
+		gfx_battery_set_label(BAT_CHARGE);
 	} else {
 		LOG_INF("Battery status: %u%% (discharging)",
 			percentage);
 
 		if (percentage > 89) {
-			gfx_battery_set_label(4);
+			gfx_battery_set_label(BAT_FULL);
 		} else if (percentage > 74) {
-			gfx_battery_set_label(3);
+			gfx_battery_set_label(BAT_3);
 		} else if (percentage > 49) {
-			gfx_battery_set_label(2);
+			gfx_battery_set_label(BAT_2);
 		} else if (percentage > 24) {
-			gfx_battery_set_label(1);
+			gfx_battery_set_label(BAT_1);
 		} else {
-			gfx_battery_set_label(0);
+			gfx_battery_set_label(BAT_EMPTY);
 		}
 	}
 }

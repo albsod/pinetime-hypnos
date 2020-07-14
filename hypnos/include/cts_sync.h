@@ -9,9 +9,11 @@
 #define CTS__H
 
 #include <time.h>
+#include <stdbool.h>
 
 void cts_sync_init(void);
 void cts_sync_loop(void);
+void cts_sync_enable(bool enable);
 void cts_update_datetime(struct tm *);
 
 typedef struct {

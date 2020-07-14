@@ -7,9 +7,24 @@
 #ifndef GFX__H
 #define GFX__H
 
+enum bt_symbol {
+	BT_CONNECTED,
+	BT_ADVERTISING_ON,
+	BT_ADVERTISING_OFF,
+};
+
+enum battery_symbol {
+	BAT_CHARGE,
+	BAT_FULL,
+	BAT_3,
+	BAT_2,
+	BAT_1,
+	BAT_EMPTY
+};
+
 void gfx_init(void);
-void gfx_battery_set_label(int);
-void gfx_bt_set_label(int);
+void gfx_battery_set_label(enum battery_symbol);
+void gfx_bt_set_label(enum bt_symbol);
 void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
 void gfx_update(void);

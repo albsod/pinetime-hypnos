@@ -5,21 +5,22 @@
  */
 
 #include <lvgl.h>
+#include "gfx.h"
 #include "log.h"
 
-/* ********** defines ********** */
+/* ********** Macros and constants ********** */
 #define LV_IMG_DECLARE(var_name) extern const lv_img_dsc_t var_name;
 LV_IMG_DECLARE(evelyn);
 #define BAT_LABEL_MARGIN 3
 /* ********** ******* ********** */
 
-/* ********** variables ********** */
+/* ********** Variables ********** */
 static lv_obj_t *battery_label;
 static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
-/* ********** ********* ********** */
 
+/* ********** Functions ********** */
 void gfx_init(void)
 {
 	/* Text color */
@@ -53,7 +54,6 @@ void gfx_init(void)
 	lv_label_set_text(date_label, "Mon 10 Jan");
 	lv_obj_align(date_label, time_label, LV_ALIGN_CENTER, 0, 26);
 	LOG_DBG("Graphics init: Done");
-
 }
 
 void gfx_update(void)
@@ -72,32 +72,37 @@ void gfx_date_set_label(char *str)
 	lv_label_set_text(date_label, str);
 }
 
-void gfx_bt_set_label(int symbol)
+void gfx_bt_set_label(enum bt_symbol s)
 {
-	if (symbol) {
+	switch (s) {
+	case BT_ADVERTISING_ON:
+		lv_label_set_text(bt_label, LV_SYMBOL_WIFI);
+		break;
+	case BT_CONNECTED:
 		lv_label_set_text(bt_label, LV_SYMBOL_BLUETOOTH);
-	} else {
+		break;
+	default:
 		lv_label_set_text(bt_label, "");
 	}
 }
 
-void gfx_battery_set_label(int symbol)
+void gfx_battery_set_label(enum battery_symbol s)
 {
-	switch (symbol) {
-	case 5:
+	switch (s) {
+	case BAT_CHARGE:
 		lv_label_set_text(battery_label, LV_SYMBOL_CHARGE);
 		lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, BAT_LABEL_MARGIN);
 		break;
-	case 4:
+	case BAT_FULL:
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_FULL);
 		break;
-	case 3:
+	case BAT_3:
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_3);
 		break;
-	case 2:
+	case BAT_2:
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_2);
 		break;
-	case 1:
+	case BAT_1:
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_1);
 		break;
 	default:

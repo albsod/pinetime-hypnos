@@ -27,22 +27,12 @@ void display_sleep(void)
 {
 	(void)device_set_power_state(display_dev, DEVICE_PM_LOW_POWER_STATE, NULL,
 				     NULL);
-#ifdef CONFIG_LOG
-	int power_state = 0;
-	(void)device_get_power_state(display_dev, &power_state);
-	LOG_INF("Display power state: %u", power_state);
-#endif
 }
 
 void display_wake_up(void)
 {
 	(void)device_set_power_state(display_dev, DEVICE_PM_ACTIVE_STATE, NULL,
 				     NULL);
-#ifdef CONFIG_LOG
-	int power_state = 0;
-	(void)device_get_power_state(display_dev, &power_state);
-	LOG_INF("Display power state: %u", power_state);
-#endif
 }
 
 
