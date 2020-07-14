@@ -56,7 +56,7 @@ static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 		cts_datetime->hours, cts_datetime->minutes, cts_datetime->seconds);
 	memcpy(&clock_datetime, cts_datetime, sizeof(clock_datetime));
 	clock_sync_time(cts_datetime);
-	gfx_bt_set_label(2);
+	gfx_bt_set_label(BT_CONNECTED);
 	LOG_INF("CTS sync to clock complete.");
 }
 

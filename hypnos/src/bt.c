@@ -87,14 +87,14 @@ static void connected(struct bt_conn *conn, uint8_t err)
 	}
 	LOG_INF("connected");
 	cts_sync_enable(true);
-	gfx_bt_set_label(2);
+	gfx_bt_set_label(BT_CONNECTED);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
 {
 	LOG_INF("disconnected (reason: %u)", reason);
 	cts_sync_enable(false);
-	gfx_bt_set_label(1);
+	gfx_bt_set_label(BT_ADVERTISING_ON);
 }
 
 static bool le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
