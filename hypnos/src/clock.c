@@ -37,7 +37,7 @@ static struct tm ti = {
 void clock_str_to_local_time(const char *str)
 {
 	if (sscanf(str, "%d-%d-%dT%d:%d:%d", &ti.tm_year, &ti.tm_mon,
-		   &ti.tm_mday, &ti.tm_hour, &ti.tm_min, &ti.tm_sec) != 6) {
+			&ti.tm_mday, &ti.tm_hour, &ti.tm_min, &ti.tm_sec) != 6) {
 		LOG_ERR("Failed to parse time of build.");
 	}
 	ti.tm_year-=1900;

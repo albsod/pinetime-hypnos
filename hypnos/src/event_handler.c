@@ -47,13 +47,14 @@ static struct sensor_trigger tap = {
 void event_handler_init()
 {
 	/* Initialize GPIOs */
-        charging_dev = device_get_binding("GPIO_0");
-        gpio_pin_configure(charging_dev, BAT_CHA, GPIO_INPUT | GPIO_INT_EDGE_BOTH);
-        gpio_init_callback(&charging_cb, battery_charging_isr,
-                BIT(BAT_CHA));
+	charging_dev = device_get_binding("GPIO_0");
+	gpio_pin_configure(charging_dev, BAT_CHA, GPIO_INPUT | GPIO_INT_EDGE_BOTH);
+	gpio_init_callback(&charging_cb, battery_charging_isr,BIT(BAT_CHA));
+
 	button_dev = device_get_binding(BTN_PORT);
 	gpio_pin_configure(button_dev, BTN_IN, GPIO_INPUT | GPIO_INT_EDGE_FALLING | PULL_UP);
 	gpio_init_callback(&button_cb, button_pressed_isr, BIT(BTN_IN));
+
 	touch_dev = device_get_binding(TOUCH_PORT);
 
 	/* Enable GPIOs */
@@ -63,8 +64,8 @@ void event_handler_init()
 
 	/* Set button out pin to high to enable the button */
 	uint32_t button_out = 1U;
-        gpio_pin_configure(button_dev, BTN_OUT, GPIO_OUTPUT);
-        gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
+	gpio_pin_configure(button_dev, BTN_OUT, GPIO_OUTPUT);
+	gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
 	/* Initialize timers */
 	k_timer_init(&display_off_timer, display_off_isr, NULL);
@@ -74,12 +75,12 @@ void event_handler_init()
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
 	/* Special cases */
-        /* Get battery charging status */
+	/* Get battery charging status */
 	k_sleep(K_MSEC(10));
-        uint32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
-        battery_update_charging_status(res != 1U);
+	uint32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
+	battery_update_charging_status(res != 1U);
 
-        /* Show time, date and battery status */
+	/* Show time, date and battery status */
 	clock_show_time();
 	battery_show_status();
 

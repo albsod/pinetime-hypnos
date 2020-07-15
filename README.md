@@ -53,7 +53,7 @@ Build and install the application:
 
 ```
 $ west build -b pinetime hypnos
-$ west flash
+$ west flash --softreset
 ```
 
 ## Copying
