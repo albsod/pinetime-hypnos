@@ -14,6 +14,7 @@
 #include <time.h>
 #include "gfx.h"
 #include "log.h"
+#include "clock.h"
 #include "cts_sync.h"
 
 /* ********** Definitions ********** */
