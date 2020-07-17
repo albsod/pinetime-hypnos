@@ -83,7 +83,8 @@ PO.23 LCD backlight
 	sda-pin = <6>;
 	scl-pin = <7>;
 	clock-frequency = <100000>;
-	bma421@18 {
+
+	bma421: bma421@18 {
 		compatible = "bosch,bma421";
 		reg=<0x18>;
 		label="BMA421";
