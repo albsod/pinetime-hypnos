@@ -18,7 +18,7 @@
 #define BMA421_I2C_ADDRESS		DT_INST_REG_ADDR(0)
 
 enum bma421_channel {
-	BMA421_CHAN_STEP_COUNTER = SENSOR_ATTR_PRIV_START,
+	BMA421_CHAN_STEP_COUNTER = SENSOR_CHAN_PRIV_START,
 	BMA421_CHAN_STEP_ENABLE,
 };
 
@@ -33,6 +33,7 @@ struct bma421_data {
 	struct device *i2c;
 
 	struct bma4_dev dev;
+	struct bma4_accel_config accel_cfg;
 	struct bma4_accel accel_data;
 	uint32_t step_counter;
 	uint32_t temperature;

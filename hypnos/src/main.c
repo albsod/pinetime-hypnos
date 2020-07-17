@@ -53,21 +53,27 @@ void main(void)
 		LOG_ERR("Could not get BMA421 binding");
 	}
 
-	if (sensor_sample_fetch(accel_dev)) {
-		LOG_DBG("sensor_sample_fetch failed\n");
-	} else {
-		LOG_DBG("sensor_sample_fetch ok");
-		sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_X, &accel_data[0]);
-		LOG_DBG("sensor_channel_get accel.X %d", accel_data[0].val1);
+	while(1) {
+		k_busy_wait(5000);
+		if (sensor_sample_fetch(accel_dev)) {
+			LOG_DBG("sensor_sample_fetch failed\n");
+		} else {
+			LOG_DBG("sensor_sample_fetch ok");
+			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_X, &accel_data[0]);
+			LOG_WRN("sensor_channel_get accel.X %d.%d", accel_data[0].val1, accel_data[0].val2);
 
-		sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Y, &accel_data[1]);
-		LOG_DBG("sensor_channel_get accel.Y %d", accel_data[1].val1);
+			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Y, &accel_data[1]);
+			LOG_WRN("sensor_channel_get accel.Y %d", accel_data[1].val1);
 
-		sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Z, &accel_data[2]);
-		LOG_DBG("sensor_channel_get accel.Z %d", accel_data[2].val1);
+			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Z, &accel_data[2]);
+			LOG_WRN("sensor_channel_get accel.Z %d", accel_data[2].val1);
 
-		sensor_channel_get(accel_dev, SENSOR_CHAN_DIE_TEMP, &accel_data[3]);
-		LOG_DBG("sensor_channel_get temperature %d", accel_data[3].val1);	
+			sensor_channel_get(accel_dev, SENSOR_CHAN_PRIV_START, &accel_data[2]);
+			LOG_WRN("sensor_channel_get step count %d", accel_data[2].val1);
+
+			sensor_channel_get(accel_dev, SENSOR_CHAN_DIE_TEMP, &accel_data[3]);
+			LOG_WRN("sensor_channel_get temperature %d", accel_data[3].val1);
+		}
 	}
 
 }
@@ -88,33 +94,13 @@ void bt_thread(void)
 	while (true) {
 		bt_await_on();
 		LOG_INF("Enabling BLE advertising...");
-		// if (bt_is_initialized()) {
-		// 	bt_adv_start();
-		// } else {
-		// 	bt_init();
-		// 	cts_sync_init();
-		// }
-		// cts_sync_enable(true);
-
-		if (sensor_sample_fetch(accel_dev)) {
-			LOG_DBG("sensor_sample_fetch failed\n");
+		if (bt_is_initialized()) {
+			bt_adv_start();
 		} else {
-			LOG_DBG("sensor_sample_fetch ok");
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_X, &accel_data[0]);
-			LOG_DBG("sensor_channel_get accel.X %d", accel_data[0].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Y, &accel_data[1]);
-			LOG_DBG("sensor_channel_get accel.Y %d", accel_data[1].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Z, &accel_data[2]);
-			LOG_DBG("sensor_channel_get accel.Z %d", accel_data[2].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_DIE_TEMP, &accel_data[3]);
-			LOG_DBG("sensor_channel_get temperature %d", accel_data[3].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_ATTR_PRIV_START, &accel_data[3]);
-			LOG_DBG("sensor_channel_get temperature %d", accel_data[3].val1);
+			bt_init();
+			cts_sync_init();
 		}
+		cts_sync_enable(true);
 
 		k_cpu_idle();
 	}

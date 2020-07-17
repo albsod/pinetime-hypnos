@@ -73,24 +73,32 @@ static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 	return 0;
 }
 
-// static void bma421_channel_accel_convert(struct sensor_value *val,
-// 					s64_t raw_val)
-// {
-// 	/*
-// 	 * accel_val = (sample * BMA421_PMU_FULL_RAGE) /
-// 	 *             (2^data_width * 10^6)
-// 	 */
-// 	raw_val = (raw_val * BMA421_PMU_FULL_RANGE) /
-// 		  (1 << (8 + BMA421_ACCEL_LSB_BITS));
-// 	val->val1 = raw_val / 1000000;
-// 	val->val2 = raw_val % 1000000;
+/*! @brief Converts raw sensor values(LSB) to meters per seconds square.
+ *
+ *  @param[out] val      : converted sensor value.
+ *  @param[in] val       : Raw sensor value.
+ *  @param[in] g_range   : Accel Range selected (2G, 4G, 8G, 16G).
+ *  @param[in] bit_width : Resolution of the sensor.
+ *
+ */
+static void bma421_channel_accel_convert(struct sensor_value *val,
+					uint16_t raw_val,
+					float g_range,
+					uint8_t bit_width)
+{
+	float half_scale = (float)(1 << bit_width) / 2.0f;
+	float accel = SENSOR_G * raw_val * g_range / half_scale;
 
-// 	/* normalize val to make sure val->val2 is positive */
-// 	if (val->val2 < 0) {
-// 		val->val1 -= 1;
-// 		val->val2 += 1000000;
-// 	}
-// }
+	accel *= 1000000;
+	val->val1 = ((uint64_t)accel) / 1000000;
+	val->val2 = ((uint64_t)accel) % 1000000;
+
+	/* normalize val to make sure val->val2 is positive */
+	if (val->val2 < 0) {
+		val->val1 -= 1;
+		val->val2 += 1000000;
+	}
+}
 
 static int bma421_channel_get(struct device *dev,
 			      enum sensor_channel chan,
@@ -104,17 +112,19 @@ static int bma421_channel_get(struct device *dev,
 	 */
 	switch((u16_t)chan) {
 	case SENSOR_CHAN_ACCEL_X:
-		val->val1 = drv_data->accel_data.x;
-		val->val2 = 0;
-		// maybe use:
-		// bma421_channel_accel_convert(val, drv_data->accel_data->x);
+		// val->val1 = drv_data->accel_data.x;
+		// val->val2 = 0;
+		bma421_channel_accel_convert(val,
+					drv_data->accel_data.x,
+					drv_data->accel_cfg.range,
+					drv_data->dev.resolution);
 		break;
 	case SENSOR_CHAN_ACCEL_Y:
-		val->val1 = drv_data->accel_data.x;
+		val->val1 = drv_data->accel_data.y;
 		val->val2 = 0;
 		break;
 	case SENSOR_CHAN_ACCEL_Z:
-		val->val1 = drv_data->accel_data.x;
+		val->val1 = drv_data->accel_data.z;
 		val->val2 = 0;
 		break;
 	case SENSOR_CHAN_ACCEL_XYZ:
@@ -132,8 +142,14 @@ static int bma421_channel_get(struct device *dev,
 		val->val2 = 0;
 		break;
 	case SENSOR_CHAN_DIE_TEMP:
-		val->val1 = drv_data->temperature;
-		val->val2 = 0;
+		val->val1 = drv_data->temperature / 1000;
+		val->val2 = drv_data->temperature % 1000;
+
+		/* normalize val to make sure val->val2 is positive */
+		if (val->val2 < 0) {
+			val->val1 -= 1;
+			val->val2 += 1000;
+		}
 		break;
 	default:
 		return -ENOTSUP;
@@ -164,13 +180,14 @@ int bma421_init_driver(struct device *dev)
 	}
 
 	memset(&drv_data->dev, 0, sizeof(struct bma4_dev));
-    drv_data->dev.intf = BMA4_I2C_INTF;
-    drv_data->dev.intf_ptr = drv_data;
+	drv_data->dev.intf = BMA4_I2C_INTF;
+	drv_data->dev.intf_ptr = drv_data;
 	drv_data->dev.variant = BMA42X_VARIANT;
-    drv_data->dev.bus_read = bm421_i2c_read;
-    drv_data->dev.bus_write = bm421_i2c_write;
-    drv_data->dev.delay_us = bma421_delay_us;
-    drv_data->dev.read_write_len = 8;
+	drv_data->dev.bus_read = bm421_i2c_read;
+	drv_data->dev.bus_write = bm421_i2c_write;
+	drv_data->dev.delay_us = bma421_delay_us;
+	drv_data->dev.read_write_len = 8;
+	drv_data->dev.resolution = BMA4_16_BIT_RESOLUTION;
 
 	res = bma421_init(&drv_data->dev);
 	if (res)
@@ -183,6 +200,23 @@ int bma421_init_driver(struct device *dev)
 	res = bma4_set_accel_enable(1, &drv_data->dev);
 	if (res)
 		LOG_ERR("Accel enable failed err %d", res);
+
+	res = bma4_get_accel_config(&drv_data->accel_cfg, &drv_data->dev);
+	if (res)
+		LOG_ERR("Failed to get Acceleration config err %d", res);
+
+	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_2G;
+	drv_data->accel_cfg.perf_mode = BMA4_CONTINUOUS_MODE;
+
+	/*
+	When perf mode disabled, ODR must be set to min 50Hz for most features
+	and min 200Hz for double feature
+	*/
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_50HZ;
+
+	res = bma4_set_accel_config(&drv_data->accel_cfg, &drv_data->dev);
+	if (res)
+		LOG_ERR("Failed to set Acceleration config err %d", res);
 
 	res = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
 	if (res)
