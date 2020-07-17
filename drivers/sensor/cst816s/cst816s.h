@@ -15,11 +15,17 @@
 #define CST816S_I2C_ADDRESS		CONFIG_CST816S_I2C_ADDR
 
 #define CST816S_REG_DATA 0x00
+#define CST816S_REG_POWER_MODE 0xA5
+#define CST816S_CMD_ENTER_SLEEP 0x03
+#define CST816S_RESET_PIN 10
 
 struct cst816s_data {
 	struct device *i2c;
 	int16_t x_sample;
 	int16_t y_sample;
+#ifdef CONFIG_DEVICE_POWER_MANAGEMENT
+	uint32_t pm_state;
+#endif
 
 #ifdef CONFIG_CST816S_TRIGGER
 	struct device *gpio;
