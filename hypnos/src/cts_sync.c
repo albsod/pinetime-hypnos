@@ -77,8 +77,8 @@ static void cts_sync_timer_timeout_handler(struct k_timer *tmr)
 }
 
 uint8_t cts_sync_read(struct bt_conn *conn, uint8_t err,
-					struct bt_gatt_read_params *params,
-					const void *data, u16_t length)
+			struct bt_gatt_read_params *params,
+			const void *data, u16_t length)
 {
 	LOG_DBG("Reading CCC data: err %d, %d bytes, offset %d.", err, length, m_read_buf.offset);
 
@@ -94,8 +94,8 @@ uint8_t cts_sync_read(struct bt_conn *conn, uint8_t err,
 }
 
 uint8_t cts_sync_service_discovered(struct bt_conn* conn, 
-									const struct bt_gatt_attr* attr,
-									struct bt_gatt_discover_params* params)
+					const struct bt_gatt_attr* attr,
+					struct bt_gatt_discover_params* params)
 {
 	if (!attr) {
 		LOG_INF("CTS Service Discovery completed");

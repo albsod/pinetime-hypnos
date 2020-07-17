@@ -123,8 +123,8 @@ void bt_init(void)
 {
 	int err = bt_enable(NULL);
 	if (err) {
-			LOG_ERR("Bluetooth init failed (err %d)", err);
-			return;
+		LOG_ERR("Bluetooth init failed (err %d)", err);
+		return;
 	}
 
 	bt_ready();

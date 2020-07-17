@@ -49,7 +49,7 @@ void event_handler_init()
 	/* Initialize GPIOs */
 	charging_dev = device_get_binding("GPIO_0");
 	gpio_pin_configure(charging_dev, BAT_CHA, GPIO_INPUT | GPIO_INT_EDGE_BOTH);
-	gpio_init_callback(&charging_cb, battery_charging_isr,BIT(BAT_CHA));
+	gpio_init_callback(&charging_cb, battery_charging_isr, BIT(BAT_CHA));
 
 	button_dev = device_get_binding(BTN_PORT);
 	gpio_pin_configure(button_dev, BTN_IN, GPIO_INPUT | GPIO_INT_EDGE_FALLING | PULL_UP);
