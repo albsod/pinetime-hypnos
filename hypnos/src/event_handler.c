@@ -12,6 +12,7 @@
 #include "battery.h"
 #include "bt.h"
 #include "clock.h"
+#include "touch.h"
 #include "display.h"
 #include "event_handler.h"
 #include "gfx.h"
@@ -92,6 +93,7 @@ void display_off_isr(struct k_timer *light_off)
 {
 	backlight_enable(false);
 	display_sleep();
+	touch_sleep();
 }
 
 void bt_toggle_unlock_isr(struct k_timer *bt_toggle)
@@ -109,6 +111,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 {
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
+	touch_wake_up();
 	display_wake_up();
 	clock_increment_local_time();
 	clock_show_time();
