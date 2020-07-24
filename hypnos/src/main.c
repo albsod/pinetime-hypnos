@@ -8,6 +8,7 @@
  */
 
 #include <zephyr.h>
+#include "accelerometer.h"
 #include "backlight.h"
 #include "battery.h"
 #include "bt.h"
@@ -30,10 +31,6 @@ K_THREAD_DEFINE(bt_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
 K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
                 PRIORITY, 0, 0);
 
-static struct device *accel_dev;
-
-struct sensor_value accel_data[5];
-
 /* ******** Functions ******** */
 void main(void)
 {
@@ -43,39 +40,11 @@ void main(void)
 	gfx_init();
 	clock_init();
 	battery_init();
+	accelerometer_init();
 	display_init();
 	event_handler_init();
 	gfx_update();
 	backlight_init();
-
-	accel_dev = device_get_binding("bma421");
-	if (!accel_dev) {
-		LOG_ERR("Could not get BMA421 binding");
-	}
-
-	while(1) {
-		k_busy_wait(5000);
-		if (sensor_sample_fetch(accel_dev)) {
-			LOG_DBG("sensor_sample_fetch failed\n");
-		} else {
-			LOG_DBG("sensor_sample_fetch ok");
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_X, &accel_data[0]);
-			LOG_WRN("sensor_channel_get accel.X %d.%d", accel_data[0].val1, accel_data[0].val2);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Y, &accel_data[1]);
-			LOG_WRN("sensor_channel_get accel.Y %d", accel_data[1].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_Z, &accel_data[2]);
-			LOG_WRN("sensor_channel_get accel.Z %d", accel_data[2].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_PRIV_START, &accel_data[2]);
-			LOG_WRN("sensor_channel_get step count %d", accel_data[2].val1);
-
-			sensor_channel_get(accel_dev, SENSOR_CHAN_DIE_TEMP, &accel_data[3]);
-			LOG_WRN("sensor_channel_get temperature %d", accel_data[3].val1);
-		}
-	}
-
 }
 
 void main_thread(void)

@@ -8,6 +8,7 @@
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
 #include <stdbool.h>
+#include "accelerometer.h"
 #include "backlight.h"
 #include "battery.h"
 #include "bt.h"
@@ -79,9 +80,10 @@ void event_handler_init()
         uint32_t res =  gpio_pin_get(charging_dev, BAT_CHA);
         battery_update_charging_status(res != 1U);
 
-        /* Show time, date and battery status */
+	/* Show time, date and battery status */
 	clock_show_time();
 	battery_show_status();
+	accelerometer_show_health_data();
 
 	LOG_DBG("Event handler init: Done");
 }
@@ -107,7 +109,6 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
 {
-	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	clock_increment_local_time();
@@ -126,17 +127,21 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 		bt_on();
 	}
 	gfx_update();
+	backlight_enable(true);
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
-	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
+	accelerometer_show_health_data();
 	gfx_update();
+	backlight_enable(true);
+
+	sensor_sample_fetch(touch_dev);
 }
 
 /* ********** ************** ********** */
