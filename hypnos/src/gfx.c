@@ -20,6 +20,8 @@ static lv_obj_t *battery_label;
 static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
+static lv_obj_t *step_count_label;
+static lv_obj_t *temperature_label;
 
 /* ********** Functions ********** */
 void gfx_init(void)
@@ -72,6 +74,18 @@ void gfx_init(void)
 	lv_label_set_style(date_label, LV_LABEL_STYLE_MAIN, &style_date);
 	lv_label_set_text(date_label, "Mon 10 Jan");
 	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
+
+	/* Step counter label and style */
+	step_count_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_style(step_count_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_label_set_text(step_count_label, "50 steps");
+	lv_obj_align(step_count_label, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 2);
+
+	/* temperature label and style */
+	temperature_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_style(temperature_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_label_set_text(temperature_label, "25'C");
+	lv_obj_align(temperature_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -37, 2);
 	LOG_DBG("Graphics init: Done");
 }
 
@@ -79,7 +93,6 @@ void gfx_update(void)
 {
 	lv_task_handler();
 }
-
 
 void gfx_time_set_label(char *str)
 {
@@ -130,4 +143,14 @@ void gfx_battery_set_label(enum battery_symbol s)
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_EMPTY);
 	}
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
+}
+
+void gfx_step_counter_set_label(char *str)
+{
+	lv_label_set_text(step_count_label, str);
+}
+
+void gfx_temperature_set_label(char *str)
+{
+	lv_label_set_text(temperature_label, str);
 }
