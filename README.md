@@ -58,15 +58,10 @@ $ west flash
 
 ## Copying
 
-The Hypnos application is mostly under the Mozilla Public License 2.0 and
-the documentation, including this README, is CC BY-SA 4.0 or any later version.
+All source code in this repository may be redistributed under the
+Apache 2.0 license, unless explicitly stated otherwise. Certain
+dependencies are under the MIT/X11, 3-clause BSD or similar permissive
+licenses.
 
-Everything else should be under Apache 2.0, MIT/Expat, 3-clause BSD or similar
-permissive licenses. Look for SPDX lines and check the source tree history
-to be sure.
-
-MPL 2.0 is a file-based copyleft license compatible with all commonly used
-GNU licenses (LGPL/GPL/AGPL) as well as Apache 2.0.
-
-![MPL compatibility](https://opensource.com/sites/default/files/styles/image-full-size/public/lead-images/OSCD_MPL2_520x292_FINAL.png?itok=6vv4XnEz)
-<br />Image by Opensource.com
+The documentation contained in this README and on the wiki are under
+the CC BY-SA 4.0 license.

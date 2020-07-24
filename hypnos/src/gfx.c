@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Endian Technologies AB
  *
- * SPDX-License-Identifier: MPL-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <lvgl.h>
