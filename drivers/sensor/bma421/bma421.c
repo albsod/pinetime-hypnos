@@ -19,7 +19,6 @@ static int8_t bm421_i2c_read(uint8_t reg_addr, uint8_t *read_data,
 				uint32_t len, void *intf_ptr)
 {
 	struct bma421_data *drv_data = intf_ptr;
-	// LOG_INF("bm421_i2c_read 0x%x len %d", reg_addr, len);
 	return i2c_burst_read(drv_data->i2c, BMA421_I2C_ADDRESS,
 				reg_addr, read_data, len);
 }
@@ -28,44 +27,42 @@ static int8_t bm421_i2c_write(uint8_t reg_addr, const uint8_t *read_data,
 				uint32_t len, void *intf_ptr)
 {
 	struct bma421_data *drv_data = intf_ptr;
-	// LOG_INF("bm421_i2c_write 0x%x len %d", reg_addr, len);
 	return i2c_burst_write(drv_data->i2c, BMA421_I2C_ADDRESS,
 				reg_addr, read_data, len);
 }
 
 static void bma421_delay_us(uint32_t period, void *intf_ptr)
 {
-	// LOG_INF("bma421_delay_us %d us", period);
 	k_busy_wait(period);
 }
 
 static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 {
 	struct bma421_data *drv_data = dev->driver_data;
-	int8_t res = 0;
+	int8_t ret = 0;
 	switch (chan) {
 	case SENSOR_CHAN_ACCEL_X:
 	case SENSOR_CHAN_ACCEL_Y:
 	case SENSOR_CHAN_ACCEL_Z:
 	case SENSOR_CHAN_ACCEL_XYZ:
-		res = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
+		ret = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
 		break;
 	case BMA421_CHAN_STEP_COUNTER:
-		res = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
+		ret = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
 		break;
 	case SENSOR_CHAN_DIE_TEMP:
-		res = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
+		ret = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
 		break;
 	case SENSOR_CHAN_ALL:
-		res = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
-		res = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
-		res = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
+		ret = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
+		ret = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
+		ret = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
 		break;
 	default:
 		return -ENOTSUP;
 	}
 
-	if (res != 0) {
+	if (ret != 0) {
 		LOG_DBG("Could not read data");
 		return -EIO;
 	}
@@ -112,12 +109,14 @@ static int bma421_channel_get(struct device *dev,
 	 */
 	switch((u16_t)chan) {
 	case SENSOR_CHAN_ACCEL_X:
-		// val->val1 = drv_data->accel_data.x;
-		// val->val2 = 0;
+		val->val1 = drv_data->accel_data.x;
+		val->val2 = 0;
+		/* TODO: adapt accel_convert function to make it work
 		bma421_channel_accel_convert(val,
 					drv_data->accel_data.x,
 					drv_data->accel_cfg.range,
 					drv_data->dev.resolution);
+		*/
 		break;
 	case SENSOR_CHAN_ACCEL_Y:
 		val->val1 = drv_data->accel_data.y;
@@ -170,7 +169,7 @@ static const struct sensor_driver_api bma421_driver_api = {
 int bma421_init_driver(struct device *dev)
 {
 	struct bma421_data *drv_data = dev->driver_data;
-	uint8_t res;
+	uint8_t ret;
 
 	drv_data->i2c = device_get_binding(DT_INST_BUS_LABEL(0));
 	if (drv_data->i2c == NULL) {
@@ -189,21 +188,24 @@ int bma421_init_driver(struct device *dev)
 	drv_data->dev.read_write_len = 8;
 	drv_data->dev.resolution = BMA4_16_BIT_RESOLUTION;
 
-	res = bma421_init(&drv_data->dev);
-	if (res)
-		LOG_ERR("init failed err %d", res);
+	ret = bma421_init(&drv_data->dev);
+	if (ret) {
+		LOG_ERR("init failed err %d", ret);
+	}
+	ret = bma421_write_config_file(&drv_data->dev);
+	if (ret) {
+		LOG_ERR("writing config failed err %d", ret);
+	}
 
-	res = bma421_write_config_file(&drv_data->dev);
-	if (res)
-		LOG_ERR("writing config failed err %d", res);
+	ret = bma4_set_accel_enable(1, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Accel enable failed err %d", ret);
+	}
 
-	res = bma4_set_accel_enable(1, &drv_data->dev);
-	if (res)
-		LOG_ERR("Accel enable failed err %d", res);
-
-	res = bma4_get_accel_config(&drv_data->accel_cfg, &drv_data->dev);
-	if (res)
-		LOG_ERR("Failed to get Acceleration config err %d", res);
+	ret = bma4_get_accel_config(&drv_data->accel_cfg, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Failed to get Acceleration config err %d", ret);
+	}
 
 	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_2G;
 	drv_data->accel_cfg.perf_mode = BMA4_CONTINUOUS_MODE;
@@ -214,13 +216,15 @@ int bma421_init_driver(struct device *dev)
 	*/
 	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_50HZ;
 
-	res = bma4_set_accel_config(&drv_data->accel_cfg, &drv_data->dev);
-	if (res)
-		LOG_ERR("Failed to set Acceleration config err %d", res);
+	ret = bma4_set_accel_config(&drv_data->accel_cfg, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Failed to set Acceleration config err %d", ret);
+	}
 
-	res = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
-	if (res)
-		LOG_ERR("cannot activate stepcounter err %d", res);
+	ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("cannot activate stepcounter err %d", ret);
+	}
 
 #ifdef CONFIG_BMA421_TRIGGER
 	if (bma421_init_interrupt(dev) < 0) {

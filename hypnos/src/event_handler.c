@@ -83,7 +83,7 @@ void event_handler_init()
 	/* Show time, date and battery status */
 	clock_show_time();
 	battery_show_status();
-	accelerometer_show_health_data();
+	accelerometer_show_data();
 
 	LOG_DBG("Event handler init: Done");
 }
@@ -137,11 +137,9 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
-	accelerometer_show_health_data();
+	accelerometer_show_data();
 	gfx_update();
 	backlight_enable(true);
-
-	sensor_sample_fetch(touch_dev);
 }
 
 /* ********** ************** ********** */

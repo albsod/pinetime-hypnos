@@ -35,7 +35,7 @@ void accelerometer_init()
 	LOG_DBG("Accelerometer init: Done");
 }
 
-void accelerometer_show_health_data()
+void accelerometer_show_data()
 {
 	if (sensor_sample_fetch(accel_dev)) {
 		LOG_ERR("sensor_sample_fetch failed\n");
