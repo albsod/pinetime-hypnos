@@ -208,7 +208,7 @@ int bma421_init_driver(struct device *dev)
 	}
 
 	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_2G;
-	drv_data->accel_cfg.perf_mode = BMA4_CONTINUOUS_MODE;
+	drv_data->accel_cfg.perf_mode = BMA4_CIC_AVG_MODE;
 
 	/*
 	When perf mode disabled, ODR must be set to min 50Hz for most features
@@ -225,6 +225,14 @@ int bma421_init_driver(struct device *dev)
 	if (ret) {
 		LOG_ERR("cannot activate stepcounter err %d", ret);
 	}
+
+	ret = bma4_set_advance_power_save(BMA4_ENABLE, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("cannot activate power save state err %d", ret);
+	}
+
+	uint8_t status = 0xFF;
+	ret = bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
 
 #ifdef CONFIG_BMA421_TRIGGER
 	if (bma421_init_interrupt(dev) < 0) {
