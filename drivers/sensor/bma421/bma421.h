@@ -27,7 +27,7 @@ struct bma421_data {
 	uint32_t temperature;
 	
 #ifdef CONFIG_BMA421_TRIGGER
-	struct device *dev;
+	// struct device *dev;
 	struct device *gpio;
 	struct gpio_callback gpio_cb;
 
@@ -37,12 +37,22 @@ struct bma421_data {
 	struct sensor_trigger any_motion_trigger;
 	sensor_trigger_handler_t any_motion_handler;
 
+	struct sensor_trigger no_motion_trigger;
+	sensor_trigger_handler_t no_motion_handler;
+
+	struct sensor_trigger step_counter_trigger;
+	sensor_trigger_handler_t step_counter_handler;
+
+	struct sensor_trigger step_detection_trigger;
+	sensor_trigger_handler_t step_detection_handler;
+
 #if defined(CONFIG_BMA421_TRIGGER_OWN_THREAD)
 	K_THREAD_STACK_MEMBER(thread_stack, CONFIG_BMA421_THREAD_STACK_SIZE);
 	struct k_thread thread;
 	struct k_sem gpio_sem;
 #elif defined(CONFIG_BMA421_TRIGGER_GLOBAL_THREAD)
 	struct k_work work;
+	struct device* internal_dev;
 #endif
 
 #endif /* CONFIG_BMA421_TRIGGER */

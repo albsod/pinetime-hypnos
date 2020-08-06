@@ -21,11 +21,31 @@ struct sensor_value accel_data[3];
 struct sensor_value step_count;
 struct sensor_value temperature;
 
+struct sensor_trigger trig;
+
 static char step_label_str[32];
 static char temperature_label_str[32];
 /* ********** ********** ********** ********** ********** ********** */
 
 /* ********** ********** FUNCTIONS ********** ********** */
+
+static void trigger_handler(struct device *accel_dev, struct sensor_trigger *trigger)
+{
+	LOG_DBG("Accel:trigger_handler");
+
+	if (trigger->type != SENSOR_TRIG_DATA_READY &&
+	    trigger->type != SENSOR_TRIG_DELTA) {
+		LOG_ERR("trigger handler: unknown trigger type (%d).", trigger->type);
+		return;
+	}
+
+	if (sensor_sample_fetch(accel_dev) < 0) {
+		LOG_ERR("Accel sample update error.");
+	}
+
+	sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_XYZ, accel_data);
+}
+
 void accelerometer_init()
 {
 	accel_dev = device_get_binding("bma421");
@@ -33,6 +53,10 @@ void accelerometer_init()
 		LOG_ERR("Could not get BMA421 binding");
 	}
 	LOG_DBG("Accelerometer init: Done");
+
+	trig.chan = SENSOR_CHAN_ACCEL_XYZ; /* does not matter */
+	trig.type = SENSOR_TRIG_DATA_READY;
+	sensor_trigger_set(accel_dev, &trig, trigger_handler);
 }
 
 void accelerometer_show_data()
