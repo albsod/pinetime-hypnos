@@ -67,6 +67,24 @@ static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 		return -EIO;
 	}
 
+	uint8_t status = 0xff;
+	bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
+	LOG_WRN("Status 0x%x", status);
+
+	uint16_t major;
+	uint16_t minor;
+	bma421_get_version_config(&major, &minor, &drv_data->dev);
+	LOG_WRN("config version %d.%d", major, minor);
+
+	struct bma421_stepcounter_settings settings;
+	bma421_stepcounter_get_parameter(&settings, &drv_data->dev);
+	LOG_WRN("config param1 0x%x - param2 0x%x - param3 0x%x - param4 0x%x - param5 0x%x", 
+			settings.param1, settings.param2, settings.param3, settings.param4, settings.param5);
+
+	uint16_t int_status = 0xffffu;
+	bma421_read_int_status(&int_status, &drv_data->dev);
+	LOG_WRN("Int status 0x%x", int_status);
+
 	return 0;
 }
 
@@ -160,6 +178,7 @@ static int bma421_channel_get(struct device *dev,
 static const struct sensor_driver_api bma421_driver_api = {
 #if CONFIG_BMA421_TRIGGER
 	.attr_set = bma421_attr_set,
+	//.attr_get = bma421_attr_get,  //from https://github.com/zephyrproject-rtos/zephyr/commit/696fc3afbf636a6c63a203cf614c584674e81820
 	.trigger_set = bma421_trigger_set,
 #endif
 	.sample_fetch = bma421_sample_fetch,
@@ -207,15 +226,72 @@ int bma421_init_driver(struct device *dev)
 		LOG_ERR("Failed to get Acceleration config err %d", ret);
 	}
 
-	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_2G;
+#if defined(CONFIG_BMA421_ACC_PERF_MODE)
+	drv_data->accel_cfg.perf_mode = BMA4_CONTINUOUS_MODE;
+#else
 	drv_data->accel_cfg.perf_mode = BMA4_CIC_AVG_MODE;
+#endif
+
+#if defined(CONFIG_BMA421_ACC_RANGE_2G)
+	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_2G;
+#elif defined(CONFIG_BMA421_ACC_RANGE_4G)
+	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_4G;
+#elif defined(CONFIG_BMA421_ACC_RANGE_8G)
+	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_8G;
+#elif defined(CONFIG_BMA421_ACC_RANGE_16G)
+	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_16G;
+#endif
 
 	/*
 	When perf mode disabled, ODR must be set to min 50Hz for most features
 	and min 200Hz for double feature
 	*/
+#if defined(CONFIG_BMA421_ACC_ODR_0_78HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_0_78HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_1_56HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_1_56HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_3_12HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_3_12HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_6_25HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_6_25HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_12_5HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_12_5HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_25HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_25HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_50HZ)
 	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_50HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_100HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_200HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_200HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_400HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_400HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_800HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_800HZ;
+#elif defined(CONFIG_BMA421_ACC_ODR_1600HZ)
+	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_1600HZ;
+#else
+	drv_data->accel_cfg.odr = 0;
+#endif
 
+#if defined(CONFIG_BMA421_ACC_BWP_OSR4_AVG1)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_OSR4_AVG1;
+#elif defined(CONFIG_BMA421_ACC_BWP_OSR2_AVG2)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_OSR2_AVG2;
+#elif defined(CONFIG_BMA421_ACC_BWP_NORM_AVG4)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
+#elif defined(CONFIG_BMA421_ACC_BWP_CIC_AVG8)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_CIC_AVG8;
+#elif defined(CONFIG_BMA421_ACC_BWP_RES_AVG16)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_RES_AVG16;
+#elif defined(CONFIG_BMA421_ACC_BWP_RES_AVG32)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_RES_AVG32;
+#elif defined(CONFIG_BMA421_ACC_BWP_RES_AVG64)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_RES_AVG64;
+#elif defined(CONFIG_BMA421_ACC_BWP_RES_AVG128)
+	drv_data->accel_cfg.bandwidth = BMA4_ACCEL_RES_AVG128;
+#endif
+		
 	ret = bma4_set_accel_config(&drv_data->accel_cfg, &drv_data->dev);
 	if (ret) {
 		LOG_ERR("Failed to set Acceleration config err %d", ret);
