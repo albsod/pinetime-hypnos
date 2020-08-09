@@ -1,0 +1,6 @@
+/.west
+/bootloader
+/modules
+/tools
+/zephyr
+/pinetime/build
