@@ -57,9 +57,6 @@ int bma421_attr_set(struct device *dev,
 	default:
 		return -ENOTSUP;
 	}
-	// if (chan != SENSOR_CHAN_ACCEL_XYZ) {
-	// 	return -ENOTSUP;
-	// }
 
 	return 0;
 }
@@ -84,14 +81,13 @@ static void bma421_thread_cb(void *arg)
 	struct device *dev = arg;
 	struct bma421_data *drv_data = dev->driver_data;
 	u8_t status = 0U;
-	int err = 0;
 
 	uint16_t int_status = 0xffffu;
 	bma421_read_int_status(&int_status, &drv_data->dev);
 	LOG_WRN("Int status 0x%x", int_status);
 
 	/* check for data ready */
-	if (((int_status & BMA4_DATA_RDY_INT) == BMA4_DATA_RDY_INT)
+	if (((int_status & BMA4_ACCEL_DATA_RDY_INT) == BMA4_ACCEL_DATA_RDY_INT)
 		&& drv_data->data_ready_handler != NULL) {
 		drv_data->data_ready_handler(dev, &drv_data->data_ready_trigger);
 	}
@@ -101,17 +97,6 @@ static void bma421_thread_cb(void *arg)
 		&& drv_data->any_motion_handler != NULL) {
 		drv_data->any_motion_handler(dev, &drv_data->any_motion_trigger);
 	}
-
-		/* clear latched interrupt -- according this is already done by reading the register*/
-/*		err = i2c_reg_update_byte(drv_data->i2c, BMA421_I2C_ADDRESS,
-					  BMA421_REG_INT_RST_LATCH,
-					  BMA421_BIT_INT_LATCH_RESET,
-					  BMA421_BIT_INT_LATCH_RESET);
-
-		if (err < 0) {
-			LOG_DBG("Could not update clear the interrupt");
-			return;
-		}*/
 }
 
 #ifdef CONFIG_BMA421_TRIGGER_OWN_THREAD
@@ -144,6 +129,7 @@ int bma421_trigger_set(struct device *dev,
 		       sensor_trigger_handler_t handler)
 {
 	struct bma421_data *drv_data = dev->driver_data;
+	int8_t ret;
 	uint16_t interrupt_mask = 0;
 	uint8_t interrupt_enable = BMA4_ENABLE;
 
@@ -155,36 +141,62 @@ int bma421_trigger_set(struct device *dev,
 	case SENSOR_TRIG_DATA_READY:
 		interrupt_mask = BMA4_DATA_RDY_INT;
 		drv_data->data_ready_handler = handler;
+		drv_data->data_ready_trigger = *trig;
 		break;
 	case SENSOR_TRIG_DELTA:
 		/* Any-Motion Trigger */
 		interrupt_mask = BMA421_ANY_MOT_INT;
 		drv_data->any_motion_handler = handler;
+		drv_data->any_motion_trigger = *trig;
 		break;
 	case BMA421_TRIG_NO_MOTION:
 		interrupt_mask = BMA421_NO_MOT_INT;
 		drv_data->no_motion_handler = handler;
+		drv_data->no_motion_trigger = *trig;
 		break;
 	case BMA421_TRIG_STEP_COUNT:
 		interrupt_mask = BMA421_STEP_CNTR_INT;
 		drv_data->step_counter_handler = handler;
+		drv_data->step_counter_trigger = *trig;
 		break;
 	case BMA421_TRIG_STEP_DETECT:
 		interrupt_mask = BMA421_STEP_CNTR_INT;
 		drv_data->step_detection_handler = handler;
+		drv_data->step_detection_trigger = *trig;
 		break;
 	default:
 		LOG_ERR("Unsupported sensor trigger");
 		return -ENOTSUP;
 	}
 
-	bma421_map_interrupt(BMA4_INTR1_MAP, interrupt_mask, interrupt_enable, &drv_data->dev);
+	// Add Error interrupt in any case.
+	interrupt_mask |= BMA421_ERROR_INT;
+
+	ret = bma421_map_interrupt(BMA4_INTR1_MAP, interrupt_mask, interrupt_enable, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Map interrupt failed err %d", ret);
+	}
+
+	uint8_t data[3] = { 0, 0, 0 };
+	bma4_read_regs(BMA4_INT_MAP_1_ADDR, data, 3, &drv_data->dev);
+	LOG_WRN("Mask 0x%x enable %d Map interrupt 0x%x 0x%x 0x%x", interrupt_mask, interrupt_enable, data[0], data[1], data[2]);
+
+	ret = bma4_set_accel_enable(BMA4_ENABLE, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Accel enable failed err %d", ret);
+	}
+	
+	gpio_pin_configure(drv_data->gpio, 
+			DT_INST_GPIO_PIN(0, int1_gpios),
+			GPIO_INPUT | GPIO_INT_EDGE_FALLING | GPIO_PULL_UP | GPIO_ACTIVE_LOW);
+
 	return 0;
 }
 
 int bma421_init_interrupt(struct device *dev)
 {
 	struct bma421_data *drv_data = dev->driver_data;
+	int8_t ret;
 
 	/* setup data ready gpio interrupt */
 	drv_data->gpio = device_get_binding(DT_INST_GPIO_LABEL(0, int1_gpios));
@@ -194,38 +206,52 @@ int bma421_init_interrupt(struct device *dev)
 		return -EINVAL;
 	}
 
-	gpio_pin_configure(drv_data->gpio, 
-				DT_INST_GPIO_PIN(0, int1_gpios),
-				GPIO_INPUT | GPIO_INT_ENABLE | GPIO_INT_LEVEL_LOW);
+	LOG_WRN("Configuring %s device, pin %d",
+		DT_INST_GPIO_LABEL(0, int1_gpios),DT_INST_GPIO_PIN(0, int1_gpios));
+
+	// gpio_pin_interrupt_configure(drv_data->gpio, 
+	// 			DT_INST_GPIO_PIN(0, int1_gpios),
+	// 			GPIO_INPUT | GPIO_INT_EDGE_FALLING | GPIO_PULL_UP | GPIO_ACTIVE_LOW);
+
 	/* no need to call gpio_pin_interrupt_configure() as it will be called
 	directly by gpio_pin_configure() */
 
 	gpio_init_callback(&drv_data->gpio_cb,
 			   bma421_gpio_callback,
-			   DT_INST_GPIO_PIN(0, int1_gpios));
+			   BIT(DT_INST_GPIO_PIN(0, int1_gpios)));
 
 	if (gpio_add_callback(drv_data->gpio, &drv_data->gpio_cb) < 0) {
 		LOG_DBG("Could not set gpio callback");
 		return -EIO;
 	}
-
+		
 	uint16_t int_status = 0xffffu;
 	bma421_read_int_status(&int_status, &drv_data->dev);
-	LOG_WRN("Int status 0x%x", int_status);
+	LOG_WRN("Interrupt status 0x%x", int_status);
 
 	struct bma4_int_pin_config pin_config;
 	bma4_get_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
 
+	pin_config.output_en = BMA4_OUTPUT_ENABLE;
+	pin_config.od = BMA4_OPEN_DRAIN;
+	pin_config.lvl = BMA4_ACTIVE_LOW;
+	pin_config.edge_ctrl = BMA4_EDGE_TRIGGER;
+	/* .edge_ctrl and .input_en are for input interrupt configuration */
+
 	LOG_WRN("int config, input_en %d, output_en %d , edge_ctrl %d, od %d, lvl %d",
 		pin_config.input_en, pin_config.output_en, pin_config.edge_ctrl, pin_config.od, pin_config.lvl);
 
-	pin_config.output_en = BMA4_OUTPUT_ENABLE;
-	pin_config.od = BMA4_PUSH_PULL;
-	pin_config.lvl = BMA4_ACTIVE_LOW;
-	/* .edge_ctrl and .input_en are for input interrupt configuration */
+	ret = bma4_set_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("Set interrupt config err %d", ret);
+	}
+	
+	/* Latch mode means that interrupt flag are only reset once the status is read */
+	bma4_set_interrupt_mode(BMA4_LATCH_MODE, &drv_data->dev);
 
-	bma4_set_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
-
+	uint8_t bma_status = 0xffu;
+	bma4_get_status(&bma_status, &drv_data->dev);
+	
 #if defined(CONFIG_BMA421_TRIGGER_OWN_THREAD)
 	k_sem_init(&drv_data->gpio_sem, 0, UINT_MAX);
 
