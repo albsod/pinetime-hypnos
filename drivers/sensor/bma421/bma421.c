@@ -70,16 +70,6 @@ static void bma421_print_registers(struct bma421_data *drv_data)
 
 	bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
 	LOG_WRN("Internal Status 0x%x", status);
-
-	uint16_t major;
-	uint16_t minor;
-	bma421_get_version_config(&major, &minor, &drv_data->dev);
-	LOG_WRN("config version %d.%d", major, minor);
-
-	struct bma421_stepcounter_settings settings;
-	bma421_stepcounter_get_parameter(&settings, &drv_data->dev);
-	LOG_WRN("config param1 0x%x - param2 0x%x - param3 0x%x - param4 0x%x - param5 0x%x", 
-			settings.param1, settings.param2, settings.param3, settings.param4, settings.param5);
 }
 
 static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
@@ -94,15 +84,11 @@ static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 	case SENSOR_CHAN_ACCEL_XYZ:
 		ret = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
 		break;
-	case BMA421_CHAN_STEP_COUNTER:
-		ret = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
-		break;
 	case SENSOR_CHAN_DIE_TEMP:
 		ret = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
 		break;
 	case SENSOR_CHAN_ALL:
 		ret = bma4_read_accel_xyz(&drv_data->accel_data, &drv_data->dev);
-		ret = bma421_step_counter_output(&drv_data->step_counter, &drv_data->dev);
 		ret = bma4_get_temperature(&drv_data->temperature, BMA4_DEG, &drv_data->dev);
 		break;
 	default:
@@ -183,10 +169,6 @@ static int bma421_channel_get(struct device *dev,
 		val->val1 = drv_data->accel_data.z;
 		val->val2 = 0;
 		break;
-	case BMA421_CHAN_STEP_COUNTER:
-		val->val1 = drv_data->step_counter;
-		val->val2 = 0;
-		break;
 	case SENSOR_CHAN_DIE_TEMP:
 		val->val1 = drv_data->temperature / 1000;
 		val->val2 = drv_data->temperature % 1000;
@@ -207,7 +189,6 @@ static int bma421_channel_get(struct device *dev,
 static const struct sensor_driver_api bma421_driver_api = {
 #if CONFIG_BMA421_TRIGGER
 	.attr_set = bma421_attr_set,
-	//.attr_get = bma421_attr_get,  //from https://github.com/zephyrproject-rtos/zephyr/commit/696fc3afbf636a6c63a203cf614c584674e81820
 	.trigger_set = bma421_trigger_set,
 #endif
 	.sample_fetch = bma421_sample_fetch,
@@ -234,15 +215,13 @@ int bma421_init_driver(struct device *dev)
 	drv_data->dev.bus_write = bm421_i2c_write;
 	drv_data->dev.delay_us = bma421_delay_us;
 	drv_data->dev.read_write_len = 8;
-	drv_data->dev.resolution = BMA4_16_BIT_RESOLUTION;
+	
+	// BMA421 only supports 12-bits values
+	drv_data->dev.resolution = BMA4_12_BIT_RESOLUTION;
 
 	ret = bma421_init(&drv_data->dev);
 	if (ret) {
 		LOG_ERR("init failed err %d", ret);
-	}
-	ret = bma421_write_config_file(&drv_data->dev);
-	if (ret) {
-		LOG_ERR("writing config failed err %d", ret);
 	}
 
 	ret = bma4_get_accel_config(&drv_data->accel_cfg, &drv_data->dev);
@@ -266,10 +245,6 @@ int bma421_init_driver(struct device *dev)
 	drv_data->accel_cfg.range = BMA4_ACCEL_RANGE_16G;
 #endif
 
-	/*
-	When perf mode disabled, ODR must be set to min 50Hz for most features
-	and min 200Hz for double feature
-	*/
 #if defined(CONFIG_BMA421_ACC_ODR_0_78HZ)
 	drv_data->accel_cfg.odr = BMA4_OUTPUT_DATA_RATE_0_78HZ;
 #elif defined(CONFIG_BMA421_ACC_ODR_1_56HZ)
@@ -321,21 +296,6 @@ int bma421_init_driver(struct device *dev)
 		LOG_ERR("Failed to set Acceleration config err %d", ret);
 	}
 
-	ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
-	if (ret) {
-		LOG_ERR("cannot activate stepcounter err %d", ret);
-	}
-
-	ret = bma421_feature_enable(BMA421_STEP_ACT, 1, &drv_data->dev);
-	if (ret) {
-		LOG_ERR("cannot activate step detection err %d", ret);
-	}
-
-	ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
-	if (ret) {
-		LOG_ERR("cannot activate stepcounter err %d", ret);
-	}
-
 	ret = bma4_set_advance_power_save(BMA4_ENABLE, &drv_data->dev);
 	if (ret) {
 		LOG_ERR("cannot activate power save state err %d", ret);
@@ -343,21 +303,6 @@ int bma421_init_driver(struct device *dev)
 
 	uint8_t status = 0xFF;
 	ret = bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
-
-	struct bma421_any_no_mot_config no_mot_config;
-	ret = bma421_get_no_mot_config(&no_mot_config, &drv_data->dev);
-	LOG_INF("No Motion config : duration %d threshold %d: axe_en 0x%x", 
-			no_mot_config.duration, no_mot_config.threshold, no_mot_config.axes_en);
-
-	no_mot_config.duration = 10;
-	no_mot_config.threshold = 0x2AA;
-	no_mot_config.axes_en = BMA421_EN_ALL_AXIS;
-	ret = bma421_set_no_mot_config(&no_mot_config, &drv_data->dev);
-
-	struct bma421_any_no_mot_config any_mot_config;
-	ret = bma421_get_any_mot_config(&any_mot_config, &drv_data->dev);
-	LOG_INF("Any Motion config : duration %d threshold %d: axe_en 0x%x", 
-			any_mot_config.duration, any_mot_config.threshold, any_mot_config.axes_en);
 
 #ifdef CONFIG_BMA421_TRIGGER
 	if (bma421_init_interrupt(dev) < 0) {

@@ -6,6 +6,6 @@
 #define ACCELEROMETER__H
 
 void accelerometer_init();
-void accelerometer_show_data();
+void accelerometer_log_data();
 
 #endif /* ACCELEROMETER__H */

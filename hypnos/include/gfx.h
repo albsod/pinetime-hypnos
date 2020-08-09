@@ -27,8 +27,6 @@ void gfx_battery_set_label(enum battery_symbol);
 void gfx_bt_set_label(enum bt_symbol);
 void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
-void gfx_step_counter_set_label(char *);
-void gfx_temperature_set_label(char *);
 void gfx_update(void);
 
 #endif /* GFX__H */

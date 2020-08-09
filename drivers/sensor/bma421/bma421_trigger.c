@@ -24,36 +24,9 @@ int bma421_attr_set(struct device *dev,
 		    const struct sensor_value *val)
 {
 	struct bma421_data *drv_data = dev->driver_data;
-	uint8_t value = val->val1;
 	switch(attr) {
 	case SENSOR_ATTR_SLOPE_TH:
 		break;
-	case BMA421_ATTR_STEP_CNT_ENABLE:
-		bma421_feature_enable(BMA421_STEP_CNTR, value, &drv_data->dev);
-		break;
-	case BMA421_ATTR_STEP_CNT_WATERMARK:
-		bma421_step_counter_set_watermark(value, &drv_data->dev);
-		break;
-	case BMA421_ATTR_STEP_CNT_RESET:
-		bma421_reset_step_counter(&drv_data->dev);
-		break;
-	case BMA421_ATTR_STEP_CNT_PARAM:
-		/* TODO Cannot do that here... because of sensor_value
-		bma421_stepcounter_set_parameter(NULL, &drv_data->dev);
-		*/
-		break;
-	case BMA421_ATTR_STEP_DTC_ENABLE:
-		bma421_step_detector_enable(value, &drv_data->dev);
-		break;
-	case BMA421_ATTR_ANY_MOT_CONFIG:
-		/* TODO Cannot do that here... Maybe sub divide into  duration, threshold, axes_en ?
-		bma421_set_any_mot_config(config, &drv_data->dev);
-		*/
-	case BMA421_ATTR_NO_MOT_CONFIG:
-		/* TODO Cannot do that here... Maybe sub divide into  duration, threshold, axes_en ? */
-		break;
-	case BMA421_ATTR_VERSION_CONFIG:
-		/* TODO Remove, getter only : bma421_get_version_config(major, minor, dev) */
 	default:
 		return -ENOTSUP;
 	}
@@ -80,8 +53,7 @@ static void bma421_thread_cb(void *arg)
 {
 	struct device *dev = arg;
 	struct bma421_data *drv_data = dev->driver_data;
-	u8_t status = 0U;
-
+	
 	uint16_t int_status = 0xffffu;
 	bma421_read_int_status(&int_status, &drv_data->dev);
 
@@ -91,25 +63,10 @@ static void bma421_thread_cb(void *arg)
 		drv_data->data_ready_handler(dev, &drv_data->data_ready_trigger);
 	}
 
-	/* check for any motion */
-	if (((int_status & BMA421_ANY_MOT_INT) == BMA421_ANY_MOT_INT)
-		&& drv_data->any_motion_handler != NULL) {
-		drv_data->any_motion_handler(dev, &drv_data->any_motion_trigger);
-		LOG_INF("Interrupt status 0x%x Any Motion detected", int_status);
-	}
-
-	/* check for no motion */
-	if (((int_status & BMA421_NO_MOT_INT) == BMA421_NO_MOT_INT)
-		&& drv_data->no_motion_handler != NULL) {
-		drv_data->no_motion_handler(dev, &drv_data->no_motion_trigger);
-		LOG_INF("Interrupt status 0x%x No Motion detected", int_status);
-	}
-
-		/* check for step detection */
-	if (((int_status & BMA421_STEP_CNTR_INT) == BMA421_STEP_CNTR_INT)
-		&& drv_data->step_detection_handler != NULL) {
-		drv_data->step_detection_handler(dev, &drv_data->step_detection_trigger);
-		LOG_INF("Interrupt status 0x%x Step detected", int_status);
+	/* check for any error */
+	if (((int_status & BMA421_ERROR_INT) == BMA421_ERROR_INT)) {
+		LOG_ERR("Interrupt status 0x%x - Error detected!", int_status);
+		// TODO: Handle error (maybe soft reset ?)
 	}
 }
 
@@ -157,27 +114,6 @@ int bma421_trigger_set(struct device *dev,
 		drv_data->data_ready_handler = handler;
 		drv_data->data_ready_trigger = *trig;
 		break;
-	case SENSOR_TRIG_DELTA:
-		/* Any-Motion Trigger */
-		interrupt_mask = BMA421_ANY_MOT_INT;
-		drv_data->any_motion_handler = handler;
-		drv_data->any_motion_trigger = *trig;
-		break;
-	case BMA421_TRIG_NO_MOTION:
-		interrupt_mask = BMA421_NO_MOT_INT;
-		drv_data->no_motion_handler = handler;
-		drv_data->no_motion_trigger = *trig;
-		break;
-	case BMA421_TRIG_STEP_COUNT:
-		interrupt_mask = BMA421_STEP_CNTR_INT;
-		drv_data->step_counter_handler = handler;
-		drv_data->step_counter_trigger = *trig;
-		break;
-	case BMA421_TRIG_STEP_DETECT:
-		interrupt_mask = BMA421_STEP_CNTR_INT;
-		drv_data->step_detection_handler = handler;
-		drv_data->step_detection_trigger = *trig;
-		break;
 	default:
 		LOG_ERR("Unsupported sensor trigger");
 		return -ENOTSUP;
@@ -223,13 +159,6 @@ int bma421_init_interrupt(struct device *dev)
 	LOG_WRN("Configuring %s device, pin %d",
 		DT_INST_GPIO_LABEL(0, int1_gpios),DT_INST_GPIO_PIN(0, int1_gpios));
 
-	// gpio_pin_interrupt_configure(drv_data->gpio, 
-	// 			DT_INST_GPIO_PIN(0, int1_gpios),
-	// 			GPIO_INPUT | GPIO_INT_EDGE_FALLING | GPIO_PULL_UP | GPIO_ACTIVE_LOW);
-
-	/* no need to call gpio_pin_interrupt_configure() as it will be called
-	directly by gpio_pin_configure() */
-
 	gpio_init_callback(&drv_data->gpio_cb,
 			   bma421_gpio_callback,
 			   BIT(DT_INST_GPIO_PIN(0, int1_gpios)));
@@ -251,9 +180,6 @@ int bma421_init_interrupt(struct device *dev)
 	pin_config.lvl = BMA4_ACTIVE_LOW;
 	pin_config.edge_ctrl = BMA4_EDGE_TRIGGER;
 	/* .edge_ctrl and .input_en are for input interrupt configuration */
-
-	LOG_WRN("int config, input_en %d, output_en %d , edge_ctrl %d, od %d, lvl %d",
-		pin_config.input_en, pin_config.output_en, pin_config.edge_ctrl, pin_config.od, pin_config.lvl);
 
 	ret = bma4_set_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
 	if (ret) {

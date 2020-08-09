@@ -447,17 +447,6 @@ static void convert_lsb_g(const struct bma4_selftest_delta_limit *accel_data_dif
                           const struct bma4_dev *dev);
 
 /*!
- *  @brief This API sets the feature config. data start address in the sensor.
- *
- *  @param[in] dev  : Structure instance of bma4_dev.
- *
- *  @return Result of API execution status
- *  @retval 0 -> Success
- *  @retval < 0 -> Fail
- */
-static int8_t set_feature_config_start_addr(struct bma4_dev *dev);
-
-/*!
  *  @brief This API increments the feature config. data address according to the user
  *  provided read/write length in the dev structure.
  *
@@ -963,89 +952,7 @@ int8_t bma4_write_regs(uint8_t addr, const uint8_t *data, uint32_t len, struct b
 
     if ((rslt == BMA4_OK) && (data != NULL))
     {
-        if (addr == BMA4_FEATURE_CONFIG_ADDR)
-        {
-            /* Disable APS if enabled before writing the feature
-             * config register
-             */
-            rslt = bma4_get_advance_power_save(&adv_pwr_save, dev);
-            if ((adv_pwr_save == BMA4_ENABLE) && (rslt == BMA4_OK))
-            {
-                rslt = bma4_set_advance_power_save(BMA4_DISABLE, dev);
-
-                /* Wait for sensor time synchronization. Refer
-                 * the data-sheet for more information
-                 */
-                dev->delay_us(450, dev->intf_ptr);
-            }
-
-            if (((len % 2) == 0) && (len <= dev->feature_len) && (rslt == BMA4_OK))
-            {
-                if (dev->read_write_len < len)
-                {
-                    /* Calculate the no of writes to be
-                     * performed according to the read/write
-                     * length
-                     */
-                    loop_count = len / dev->read_write_len;
-                    overflow = len % dev->read_write_len;
-                    index = 0;
-                    rslt = set_feature_config_start_addr(dev);
-                    if (rslt == BMA4_OK)
-                    {
-                        for (i = 0; i < loop_count; i++)
-                        {
-                            rslt = write_regs(BMA4_FEATURE_CONFIG_ADDR, data + index, dev->read_write_len, dev);
-                            if (rslt == BMA4_OK)
-                            {
-                                rslt = increment_feature_config_addr(dev);
-                                if (rslt == BMA4_OK)
-                                {
-                                    index = index + dev->read_write_len;
-                                }
-                            }
-                        }
-
-                        if ((overflow) && (rslt == BMA4_OK))
-                        {
-                            rslt = write_regs(BMA4_FEATURE_CONFIG_ADDR, data + index, overflow, dev);
-                        }
-
-                        if (rslt == BMA4_OK)
-                        {
-                            rslt = set_feature_config_start_addr(dev);
-                        }
-                    }
-                }
-                else
-                {
-                    rslt = write_regs(BMA4_FEATURE_CONFIG_ADDR, data, len, dev);
-                }
-            }
-            else
-            {
-                rslt = BMA4_E_RD_WR_LENGTH_INVALID;
-            }
-
-            if (rslt == BMA4_OK)
-            {
-                /* Enable APS if previously enabled */
-                if (adv_pwr_save == BMA4_ENABLE)
-                {
-                    rslt = bma4_set_advance_power_save(BMA4_ENABLE, dev);
-
-                    /* Wait for sensor time synchronization.
-                     * Refer the data-sheet for more
-                     * information
-                     */
-                    dev->delay_us(450, dev->intf_ptr);
-                }
-            }
-        }
-        else
-        {
             rslt = write_regs(addr, data, len, dev);
-        }
     }
     else
     {
@@ -1108,116 +1015,6 @@ static int8_t write_regs(uint8_t addr, const uint8_t *data, uint32_t len, struct
     return rslt;
 }
 
-/*!
- *  @brief This API sets the feature config. data start address in the sensor.
- */
-static int8_t get_feature_config_start_addr(struct bma4_dev *dev)
-{
-    int8_t rslt;
-    uint8_t asic_lsb = 0;
-    uint8_t asic_msb = 0;
-
-    /* NULL pointer check */
-    rslt = null_pointer_check(dev);
-
-    if (rslt == BMA4_OK)
-    {
-        rslt = read_regs(BMA4_RESERVED_REG_5B_ADDR, &asic_lsb, 1, dev);
-        if (rslt == BMA4_OK)
-        {
-            rslt = read_regs(BMA4_RESERVED_REG_5C_ADDR, &asic_msb, 1, dev);
-        }
-
-        if (rslt == BMA4_OK)
-        {
-            /* Store asic info in dev structure */
-            dev->asic_data.asic_lsb = asic_lsb & 0x0F;
-            dev->asic_data.asic_msb = asic_msb;
-        }
-    }
-
-    return rslt;
-}
-
-/*!
- *  @brief This API sets the feature config. data start address in the sensor.
- */
-static int8_t set_feature_config_start_addr(struct bma4_dev *dev)
-{
-    int8_t rslt;
-
-    /* NULL pointer check */
-    rslt = null_pointer_check(dev);
-
-    if (rslt == BMA4_OK)
-    {
-        rslt = write_regs(BMA4_RESERVED_REG_5B_ADDR, &dev->asic_data.asic_lsb, 1, dev);
-        if (rslt == BMA4_OK)
-        {
-            rslt = write_regs(BMA4_RESERVED_REG_5C_ADDR, &dev->asic_data.asic_msb, 1, dev);
-        }
-    }
-
-    return rslt;
-}
-
-/*!
- *  @brief This API increments the feature config. data address according to the user
- *  provided read/write length in the dev structure.
- */
-static int8_t increment_feature_config_addr(struct bma4_dev *dev)
-{
-    int8_t rslt;
-    uint16_t asic_addr;
-    uint8_t asic_lsb = 0;
-    uint8_t asic_msb = 0;
-
-    /* NULL pointer check */
-    rslt = null_pointer_check(dev);
-
-    if (rslt == BMA4_OK)
-    {
-        /* Read the asic address from the sensor */
-        rslt = read_regs(BMA4_RESERVED_REG_5B_ADDR, &asic_lsb, 1, dev);
-        if (rslt == BMA4_OK)
-        {
-            rslt = read_regs(BMA4_RESERVED_REG_5C_ADDR, &asic_msb, 1, dev);
-        }
-        else
-        {
-            rslt = BMA4_E_COM_FAIL;
-        }
-
-        if (rslt == BMA4_OK)
-        {
-            /* Get the asic address */
-            asic_addr = (asic_msb << 4) | (asic_lsb & 0x0F);
-
-            /* Sum the asic address with read/write length after converting from
-             * byte to word
-             */
-            asic_addr = asic_addr + (dev->read_write_len / 2);
-
-            /* Split the asic address */
-            asic_lsb = asic_addr & 0x0F;
-            asic_msb = (uint8_t)(asic_addr >> 4);
-
-            /* Write the asic address in the sensor */
-            rslt = write_regs(BMA4_RESERVED_REG_5B_ADDR, &asic_lsb, 1, dev);
-            if (rslt == BMA4_OK)
-            {
-                rslt = write_regs(BMA4_RESERVED_REG_5C_ADDR, &asic_msb, 1, dev);
-            }
-        }
-        else
-        {
-            rslt = BMA4_E_COM_FAIL;
-        }
-    }
-
-    return rslt;
-}
-
 /*! @endcond */
 
 /*!
@@ -1238,91 +1035,8 @@ int8_t bma4_read_regs(uint8_t addr, uint8_t *data, uint32_t len, struct bma4_dev
 
     if ((rslt == BMA4_OK) && (data != NULL))
     {
-        if (addr == BMA4_FEATURE_CONFIG_ADDR)
-        {
-            /* Disable APS if enabled before reading the feature
-             * config register
-             */
-            rslt = bma4_get_advance_power_save(&adv_pwr_save, dev);
-            if (adv_pwr_save == BMA4_ENABLE)
-            {
-                rslt = bma4_set_advance_power_save(BMA4_DISABLE, dev);
-
-                /* Wait for sensor time synchronization. Refer
-                 * the data-sheet for more information
-                 */
-                dev->delay_us(450, dev->intf_ptr);
-            }
-
-            if (((len % 2) == 0) && (len <= dev->feature_len) && (rslt == BMA4_OK))
-            {
-                if (dev->read_write_len < len)
-                {
-                    /* Calculate the no of writes to be
-                     * performed according to the read/write
-                     * length
-                     */
-                    loop_count = len / dev->read_write_len;
-                    overflow = len % dev->read_write_len;
-                    index = 0;
-                    rslt = set_feature_config_start_addr(dev);
-                    for (idx = 0; idx < loop_count; idx++)
-                    {
-                        rslt = read_regs(BMA4_FEATURE_CONFIG_ADDR, data + index, dev->read_write_len, dev);
-
-                        if (rslt == BMA4_OK)
-                        {
-                            rslt = increment_feature_config_addr(dev);
-
-                            if (rslt == BMA4_OK)
-                            {
-                                index = index + dev->read_write_len;
-                            }
-                        }
-                    }
-
-                    if ((overflow) && (rslt == BMA4_OK))
-                    {
-                        rslt = read_regs(BMA4_FEATURE_CONFIG_ADDR, data + index, overflow, dev);
-                    }
-
-                    if (rslt == BMA4_OK)
-                    {
-                        rslt = set_feature_config_start_addr(dev);
-                    }
-                }
-                else
-                {
-                    rslt = read_regs(BMA4_FEATURE_CONFIG_ADDR, data, len, dev);
-                }
-            }
-            else
-            {
-                rslt = BMA4_E_RD_WR_LENGTH_INVALID;
-            }
-
-            if (rslt == BMA4_OK)
-            {
-                /* Enable APS if previously enabled */
-                if (adv_pwr_save == BMA4_ENABLE)
-                {
-                    rslt = bma4_set_advance_power_save(BMA4_ENABLE, dev);
-
-                    /* Wait for sensor time synchronization.
-                     * Refer the data-sheet for more
-                     * information
-                     */
-                    dev->delay_us(450, dev->intf_ptr);
-                }
-            }
-        }
-        else
-        {
-            rslt = read_regs(addr, data, len, dev);
-        }
-    }
-    else
-    {
+        rslt = read_regs(addr, data, len, dev);
+    } else {
         rslt = BMA4_E_NULL_PTR;
     }
 
@@ -3329,10 +3043,10 @@ int8_t bma4_map_interrupt(uint8_t int_line, uint16_t int_map, uint8_t enable, st
             if (enable == TRUE)
             {
                 /* Feature interrupt mapping */
-                data[int_line] |= (uint8_t)(int_map & (0x00FF));
+                data[int_line] = (uint8_t)(int_map & (0x00FF));
 
                 /* Hardware interrupt mapping */
-                data[2] |= (uint8_t)((int_map & (0xFF00)) >> 8);
+                data[2] = (uint8_t)((int_map & (0xFF00)) >> 8);
             }
             else
             {

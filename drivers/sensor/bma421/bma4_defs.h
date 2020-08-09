@@ -749,19 +749,6 @@ enum bma4_intf {
 /**\name    STRUCTURE DEFINITIONS*/
 
 /*!
- *  @brief
- *  This structure holds asic info. for feature configuration.
- */
-struct bma4_asic_data
-{
-    /* Feature config start addr (0-3 bits)*/
-    uint8_t asic_lsb;
-
-    /* Feature config start addr (4-11 bits)*/
-    uint8_t asic_msb;
-};
-
-/*!
  * @brief Auxiliary configuration structure for user settings
  */
 struct bma4_aux_config
@@ -821,12 +808,6 @@ struct bma4_dev
 
     /*! Read/write length */
     uint16_t read_write_len;
-
-    /*! Feature len */
-    uint8_t feature_len;
-
-    /*! Contains asic information */
-    struct bma4_asic_data asic_data;
 
     /*! Contains aux configuration settings */
     struct bma4_aux_config aux_config;
