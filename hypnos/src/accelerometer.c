@@ -31,10 +31,12 @@ static char temperature_label_str[32];
 
 static void trigger_handler(struct device *accel_dev, struct sensor_trigger *trigger)
 {
-	LOG_DBG("Accel:trigger_handler");
+	LOG_DBG("Accel:trigger_handler type %d", trigger->type);
 
 	if (trigger->type != SENSOR_TRIG_DATA_READY &&
-	    trigger->type != SENSOR_TRIG_DELTA) {
+	    trigger->type != SENSOR_TRIG_DELTA &&
+	    trigger->type != BMA421_TRIG_NO_MOTION &&
+	    trigger->type != BMA421_TRIG_STEP_DETECT) {
 		LOG_ERR("trigger handler: unknown trigger type (%d).", trigger->type);
 		return;
 	}
@@ -52,11 +54,29 @@ void accelerometer_init()
 	if (!accel_dev) {
 		LOG_ERR("Could not get BMA421 binding");
 	}
-	LOG_DBG("Accelerometer init: Done");
 
 	trig.chan = SENSOR_CHAN_ACCEL_XYZ; /* does not matter */
 	trig.type = SENSOR_TRIG_DATA_READY;
-	sensor_trigger_set(accel_dev, &trig, trigger_handler);
+	if (sensor_trigger_set(accel_dev, &trig, trigger_handler)) {
+		LOG_ERR("Trigger set Error");
+	}
+
+	trig.type = BMA421_TRIG_NO_MOTION;
+	if (sensor_trigger_set(accel_dev, &trig, trigger_handler)) {
+		LOG_ERR("Trigger set Error");
+	}
+
+	trig.type = SENSOR_TRIG_DELTA;
+	if (sensor_trigger_set(accel_dev, &trig, trigger_handler)) {
+		LOG_ERR("Trigger set Error");
+	}
+
+	trig.type = BMA421_TRIG_STEP_DETECT;
+	if (sensor_trigger_set(accel_dev, &trig, trigger_handler)) {
+		LOG_ERR("Trigger set Error");
+	}
+
+	LOG_DBG("Accelerometer init: Done");
 }
 
 void accelerometer_show_data()
@@ -64,16 +84,16 @@ void accelerometer_show_data()
 	if (sensor_sample_fetch(accel_dev)) {
 		LOG_ERR("sensor_sample_fetch failed\n");
 	} else {
-		sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_XYZ, accel_data);
-		LOG_DBG("sensor_channel_get accel.X %d.%d", accel_data[0].val1, accel_data[0].val2);
-		LOG_DBG("sensor_channel_get accel.Y %d.%d", accel_data[1].val1, accel_data[1].val2);
-		LOG_DBG("sensor_channel_get accel.Z %d.%d", accel_data[2].val1, accel_data[2].val2);
+		// sensor_channel_get(accel_dev, SENSOR_CHAN_ACCEL_XYZ, accel_data);
+		LOG_INF("sensor_channel_get accel.X %d.%d", accel_data[0].val1, accel_data[0].val2);
+		LOG_INF("sensor_channel_get accel.Y %d.%d", accel_data[1].val1, accel_data[1].val2);
+		LOG_INF("sensor_channel_get accel.Z %d.%d", accel_data[2].val1, accel_data[2].val2);
 
 		sensor_channel_get(accel_dev, BMA421_CHAN_STEP_COUNTER, &step_count);
-		LOG_DBG("sensor_channel_get step count %d", step_count.val1);
+		LOG_INF("sensor_channel_get step count %d", step_count.val1);
 
 		sensor_channel_get(accel_dev, SENSOR_CHAN_DIE_TEMP, &temperature);
-		LOG_DBG("sensor_channel_get temperature %d", temperature.val1);
+		LOG_INF("sensor_channel_get temperature %d", temperature.val1);
 	}
 
 	snprintf(step_label_str, 32, "%d steps", step_count.val1);

@@ -36,40 +36,56 @@ static void bma421_delay_us(uint32_t period, void *intf_ptr)
 	k_busy_wait(period);
 }
 
+static void bma421_print_registers(struct bma421_data *drv_data)
+{
+	uint8_t status = 0xffu;
+	uint16_t int_status = 0xffffu;
+	bma421_read_int_status(&int_status, &drv_data->dev);
+	LOG_WRN("Int status 0x%x", int_status);
+
+	struct bma4_int_pin_config pin_config;
+	bma4_get_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
+
+	LOG_WRN("int config, input_en %d, output_en %d , edge_ctrl %d, od %d, lvl %d",
+		pin_config.input_en, pin_config.output_en, pin_config.edge_ctrl, pin_config.od, pin_config.lvl);
+
+	uint32_t pin_state;
+	gpio_port_get_raw(drv_data->gpio, &pin_state);
+	LOG_WRN("Pin state 0x%x", pin_state);
+
+	bma4_get_interrupt_mode(&status, &drv_data->dev);
+	LOG_WRN("Latch mode 0x%x", status);
+
+	uint8_t data[3] = { 0, 0, 0 };
+	bma4_read_regs(BMA4_INT_MAP_1_ADDR, data, 3, &drv_data->dev);
+	LOG_WRN("Map interrupt 0x%x 0x%x 0x%x", data[0], data[1], data[2]);
+
+	struct bma4_err_reg err_reg;
+	bma4_get_error_status(&err_reg, &drv_data->dev);
+	LOG_WRN("Error Reg: fatal err 0x%x cmd err 0x%x err code 0x%x fifo err 0x%x, aux err 0x%x",
+		err_reg.fatal_err, err_reg.cmd_err, err_reg.err_code, err_reg.fifo_err, err_reg.aux_err);
+
+	bma4_get_status(&status, &drv_data->dev);
+	LOG_WRN("Status 0x%x", status);
+
+	bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
+	LOG_WRN("Internal Status 0x%x", status);
+
+	uint16_t major;
+	uint16_t minor;
+	bma421_get_version_config(&major, &minor, &drv_data->dev);
+	LOG_WRN("config version %d.%d", major, minor);
+
+	struct bma421_stepcounter_settings settings;
+	bma421_stepcounter_get_parameter(&settings, &drv_data->dev);
+	LOG_WRN("config param1 0x%x - param2 0x%x - param3 0x%x - param4 0x%x - param5 0x%x", 
+			settings.param1, settings.param2, settings.param3, settings.param4, settings.param5);
+}
+
 static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 {
 	struct bma421_data *drv_data = dev->driver_data;
 	int8_t ret = 0;
-	uint8_t status = 0xffu;
-
-	// uint16_t int_status = 0xffffu;
-	// bma421_read_int_status(&int_status, &drv_data->dev);
-	// LOG_WRN("Int status 0x%x", int_status);
-
-	// struct bma4_int_pin_config pin_config;
-	// bma4_get_int_pin_config(&pin_config, BMA4_INTR1_MAP, &drv_data->dev);
-
-	// LOG_WRN("int config, input_en %d, output_en %d , edge_ctrl %d, od %d, lvl %d",
-	// 	pin_config.input_en, pin_config.output_en, pin_config.edge_ctrl, pin_config.od, pin_config.lvl);
-
-	// uint32_t pin_state;
-	// gpio_port_get_raw(drv_data->gpio, &pin_state);
-	// LOG_WRN("Pin state 0x%x", pin_state);
-
-	// bma4_get_interrupt_mode(&status, &drv_data->dev);
-	// LOG_WRN("Latch mode 0x%x", status);
-
-	// uint8_t data[3] = { 0, 0, 0 };
-	// bma4_read_regs(BMA4_INT_MAP_1_ADDR, data, 3, &drv_data->dev);
-	// LOG_WRN("Map interrupt 0x%x 0x%x 0x%x", data[0], data[1], data[2]);
-
-	// struct bma4_err_reg err_reg;
-	// bma4_get_error_status(&err_reg, &drv_data->dev);
-	// LOG_WRN("Error Reg: fatal err 0x%x cmd err 0x%x err code 0x%x fifo err 0x%x, aux err 0x%x",
-	// 	err_reg.fatal_err, err_reg.cmd_err, err_reg.err_code, err_reg.fifo_err, err_reg.aux_err);
-
-	// bma4_get_status(&status, &drv_data->dev);
-	// LOG_WRN("Before Status 0x%x", status);
 
 	switch (chan) {
 	case SENSOR_CHAN_ACCEL_X:
@@ -97,22 +113,6 @@ static int bma421_sample_fetch(struct device *dev, enum sensor_channel chan)
 		LOG_DBG("Could not read data");
 		return -EIO;
 	}
-
-	// bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
-	// LOG_WRN("Internal Status 0x%x", status);
-
-	// bma4_get_status(&status, &drv_data->dev);
-	// LOG_WRN("After Status 0x%x", status);
-
-	// uint16_t major;
-	// uint16_t minor;
-	// bma421_get_version_config(&major, &minor, &drv_data->dev);
-	// LOG_WRN("config version %d.%d", major, minor);
-
-	// struct bma421_stepcounter_settings settings;
-	// bma421_stepcounter_get_parameter(&settings, &drv_data->dev);
-	// LOG_WRN("config param1 0x%x - param2 0x%x - param3 0x%x - param4 0x%x - param5 0x%x", 
-	// 		settings.param1, settings.param2, settings.param3, settings.param4, settings.param5);
 
 	return 0;
 }
@@ -321,10 +321,20 @@ int bma421_init_driver(struct device *dev)
 		LOG_ERR("Failed to set Acceleration config err %d", ret);
 	}
 
-	// ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
-	// if (ret) {
-	// 	LOG_ERR("cannot activate stepcounter err %d", ret);
-	// }
+	ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("cannot activate stepcounter err %d", ret);
+	}
+
+	ret = bma421_feature_enable(BMA421_STEP_ACT, 1, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("cannot activate step detection err %d", ret);
+	}
+
+	ret = bma421_feature_enable(BMA421_STEP_CNTR, 1, &drv_data->dev);
+	if (ret) {
+		LOG_ERR("cannot activate stepcounter err %d", ret);
+	}
 
 	ret = bma4_set_advance_power_save(BMA4_ENABLE, &drv_data->dev);
 	if (ret) {
@@ -333,6 +343,21 @@ int bma421_init_driver(struct device *dev)
 
 	uint8_t status = 0xFF;
 	ret = bma4_read_regs(BMA4_INTERNAL_STAT, &status, 1, &drv_data->dev);
+
+	struct bma421_any_no_mot_config no_mot_config;
+	ret = bma421_get_no_mot_config(&no_mot_config, &drv_data->dev);
+	LOG_INF("No Motion config : duration %d threshold %d: axe_en 0x%x", 
+			no_mot_config.duration, no_mot_config.threshold, no_mot_config.axes_en);
+
+	no_mot_config.duration = 10;
+	no_mot_config.threshold = 0x2AA;
+	no_mot_config.axes_en = BMA421_EN_ALL_AXIS;
+	ret = bma421_set_no_mot_config(&no_mot_config, &drv_data->dev);
+
+	struct bma421_any_no_mot_config any_mot_config;
+	ret = bma421_get_any_mot_config(&any_mot_config, &drv_data->dev);
+	LOG_INF("Any Motion config : duration %d threshold %d: axe_en 0x%x", 
+			any_mot_config.duration, any_mot_config.threshold, any_mot_config.axes_en);
 
 #ifdef CONFIG_BMA421_TRIGGER
 	if (bma421_init_interrupt(dev) < 0) {

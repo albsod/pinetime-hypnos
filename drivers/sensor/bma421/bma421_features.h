@@ -951,6 +951,7 @@ int8_t bma421_set_no_mot_config(const struct bma421_any_no_mot_config *no_mot, s
  *         threshold               |        in 5.11g format.
  *                                 |        Range is 0 to 1g.
  *                                 |        Default value is 0xAA = 83mg.
+ *                                 |           = 0xAA * (1/2^11)mg
  * --------------------------------|-----------------------------------------
  *                                 |        Enables the feature on a per-axis
  *         axis_en                 |        basis.

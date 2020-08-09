@@ -84,7 +84,6 @@ static void bma421_thread_cb(void *arg)
 
 	uint16_t int_status = 0xffffu;
 	bma421_read_int_status(&int_status, &drv_data->dev);
-	LOG_WRN("Int status 0x%x", int_status);
 
 	/* check for data ready */
 	if (((int_status & BMA4_ACCEL_DATA_RDY_INT) == BMA4_ACCEL_DATA_RDY_INT)
@@ -96,6 +95,21 @@ static void bma421_thread_cb(void *arg)
 	if (((int_status & BMA421_ANY_MOT_INT) == BMA421_ANY_MOT_INT)
 		&& drv_data->any_motion_handler != NULL) {
 		drv_data->any_motion_handler(dev, &drv_data->any_motion_trigger);
+		LOG_INF("Interrupt status 0x%x Any Motion detected", int_status);
+	}
+
+	/* check for no motion */
+	if (((int_status & BMA421_NO_MOT_INT) == BMA421_NO_MOT_INT)
+		&& drv_data->no_motion_handler != NULL) {
+		drv_data->no_motion_handler(dev, &drv_data->no_motion_trigger);
+		LOG_INF("Interrupt status 0x%x No Motion detected", int_status);
+	}
+
+		/* check for step detection */
+	if (((int_status & BMA421_STEP_CNTR_INT) == BMA421_STEP_CNTR_INT)
+		&& drv_data->step_detection_handler != NULL) {
+		drv_data->step_detection_handler(dev, &drv_data->step_detection_trigger);
+		LOG_INF("Interrupt status 0x%x Step detected", int_status);
 	}
 }
 
@@ -177,9 +191,9 @@ int bma421_trigger_set(struct device *dev,
 		LOG_ERR("Map interrupt failed err %d", ret);
 	}
 
-	uint8_t data[3] = { 0, 0, 0 };
-	bma4_read_regs(BMA4_INT_MAP_1_ADDR, data, 3, &drv_data->dev);
-	LOG_WRN("Mask 0x%x enable %d Map interrupt 0x%x 0x%x 0x%x", interrupt_mask, interrupt_enable, data[0], data[1], data[2]);
+	uint16_t int_status = 0xffffu;
+	bma421_read_int_status(&int_status, &drv_data->dev);
+	LOG_WRN("Reading Interrupt status 0x%x", int_status);
 
 	ret = bma4_set_accel_enable(BMA4_ENABLE, &drv_data->dev);
 	if (ret) {
