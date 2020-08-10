@@ -1,0 +1,28 @@
+# nRF52832-MDK board configuration
+
+# Copyright (c) 2018 makerdiary.com.
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_P8     
+
+config BOARD
+	default "p8"
+
+if I2C
+
+config I2C_1
+	default y
+
+endif # I2C
+
+if SPI
+
+config SPI_0
+        default y
+
+endif # SPI
+
+config BT_CTLR
+	default BT
+
+endif # P8            
