@@ -1,7 +1,7 @@
 # Hypnos
 
 This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmware for the
-[PineTime](https://www.pine64.org/pinetime/) smartwatch. Contributions are welcome!
+[PineTime](https://www.pine64.org/pinetime/) and P8 smartwatches. Contributions are welcome!
 
 <img src="app/hypnos/hypnos-photo.png" title="Background image: Night and Sleep by Evelyn De Morgan (1878)" width="240px" height="240px">
 
@@ -45,17 +45,21 @@ Optionally disable logging to save system resources:
 $ export LOGGING="off"
 ```
 
-Build and install the application:
-
+Build the firmware for either `pinetime` or `p8` (replace `<board>` below):
 ```
 $ cd app/
-$ west build -b pinetime hypnos
+$ west build -p -b <board> hypnos
+```
+
+Install:
+
+```
 $ west flash
 ```
 
 ## Copying
 
-This software may be used under the terms of the Apache 2.0 license,
+This software may be used under the terms of the Apache License 2.0,
 unless explicitly stated otherwise.
 
 The documentation contained in this README and on the wiki are under
