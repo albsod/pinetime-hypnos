@@ -72,6 +72,7 @@ void gfx_init(void)
 	lv_label_set_style(date_label, LV_LABEL_STYLE_MAIN, &style_date);
 	lv_label_set_text(date_label, "Mon 10 Jan");
 	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
+	LOG_DBG("Graphics init: Done");
 }
 
 void gfx_update(void)

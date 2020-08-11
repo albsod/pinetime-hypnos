@@ -70,7 +70,6 @@ void bt_thread(void)
 			cts_sync_init();
 		}
 		cts_sync_enable(true);
-
 		k_cpu_idle();
 	}
 }

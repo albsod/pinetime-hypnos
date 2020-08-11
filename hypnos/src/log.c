@@ -6,4 +6,4 @@
 
 #include <logging/log.h>
 
-LOG_MODULE_REGISTER(hypnos, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(hypnos, LOG_LEVEL_DBG);

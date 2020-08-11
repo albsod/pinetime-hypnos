@@ -110,6 +110,7 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
 {
+	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	clock_increment_local_time();
@@ -133,6 +134,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
+	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();
 	clock_increment_local_time();
@@ -140,7 +142,6 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	battery_show_status();
 	accelerometer_log_data();
 	gfx_update();
-	backlight_enable(true);
 }
 
 /* ********** ************** ********** */
