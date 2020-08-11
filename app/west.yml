@@ -1,4 +1,4 @@
-# The west manifest file for the Pinetime.
+# The west manifest file for Hypnos.
 #
 # The per-installation west configuration file specifies the location of this
 # manifest file. The "path" option in the [manifest] section of .west/config
@@ -17,13 +17,13 @@
 
 manifest:
   defaults:
-    remote: pinetime
+    remote: app
 
   remotes:
-    - name: pinetime
+    - name: app
       url-base: https://github.com/zephyrproject-rtos
 
-  # The list of external projects for the Pinetime.
+  # External projects
   #
   projects:
     - name: cmsis
@@ -45,4 +45,4 @@ manifest:
       west-commands: scripts/west-commands.yml
       revision: b8c78e254ff875680e99c9f131fbe285c4575927
   self:
-    path: pinetime
+    path: app
