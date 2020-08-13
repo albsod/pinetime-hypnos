@@ -130,6 +130,9 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 {
+	if (sensor_sample_fetch(touch_dev) < 0) {
+		LOG_ERR("Accel sample update error.");
+	}
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 	display_wake_up();

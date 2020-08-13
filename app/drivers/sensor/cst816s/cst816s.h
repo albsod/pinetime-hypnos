@@ -11,6 +11,7 @@
 #include <sys/util.h>
 #include <zephyr/types.h>
 #include <drivers/gpio.h>
+#include <drivers/sensor/cst816s.h>
 
 #define CST816S_I2C_ADDRESS		CONFIG_CST816S_I2C_ADDR
 
@@ -71,10 +72,19 @@
 #define CST816S_IOCTL_IIC_OD       (1<<1)	// IIC pin drive mode, default is resistor pull-up. 0: resistive pull-up  1:OD
 #define CST816S_IOCTL_EN_1V8	   (1<<0)	// IIC and IRQ pin level selection, default is VDD level. 0:VDD  1:1.8V
 
+typedef struct {
+	int16_t x;
+	int16_t y;
+} coordinate_t;
+
 struct cst816s_data {
 	struct device *i2c;
-	int16_t x_sample;
-	int16_t y_sample;
+
+	enum cst816s_gesture gesture;
+	uint8_t number_touch_point;
+
+	coordinate_t touch_point_1;
+	coordinate_t touch_point_2;
 
 #ifdef CONFIG_CST816S_TRIGGER
 	struct device *gpio;
