@@ -19,9 +19,6 @@ on:
 # Steps to run for the Workflow
 jobs:
   build:
-    strategy:
-      matrix:
-        device: [pinetime, p8]
     runs-on: ubuntu-latest
     name: Build and upload
     steps:
@@ -64,20 +61,30 @@ jobs:
         id: west-zephyr-export
         with:
           args: 'zephyr-export'
-      - name: West Build ${{ matrix.device }}
-        uses: 'docker://zmkfirmware/zephyr-west-action-arm:latest'
-        id: west-build
-        with:
-          args: 'build "-p -b ${{ matrix.device }} app/hypnos"'
       - name: Get short git hash
         id: vars
         shell: bash
         run:
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      # Upload firmware build
-      - name: Upload firmware build
+      - name: West Build PineTime
+        uses: 'docker://zmkfirmware/zephyr-west-action-arm:latest'
+        id: west-build-pinetime
+        with:
+          args: 'build "-p -b pinetime app/hypnos"'
+      - name: Upload PineTime firmware build
         uses: actions/upload-artifact@v2
         with:
           # Append git hash to file name
-          name: ${{ matrix.device }}-hypnos-fw-${{ steps.vars.outputs.sha_short }}
+          name: hypnos-pinetime-fw-${{ steps.vars.outputs.sha_short }}
+          path: build/zephyr/zephyr.*
+      - name: West Build P8
+        uses: 'docker://zmkfirmware/zephyr-west-action-arm:latest'
+        id: west-build-p8
+        with:
+          args: 'build "-p -b p8 app/hypnos"'
+      - name: Upload PineTime P8 build
+        uses: actions/upload-artifact@v2
+        with:
+          # Append git hash to file name
+          name: hypnos-p8-fw-${{ steps.vars.outputs.sha_short }}
           path: build/zephyr/zephyr.*
