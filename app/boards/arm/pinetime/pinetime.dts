@@ -99,8 +99,8 @@ PO.23 LCD backlight
 		label = "CST816S";
 		reg = <0x15>;
 		int1-gpios = <&gpio0 28 0>;
+		reset-gpios = <&gpio0 10 0>;
 	};
-
 };
 
 
