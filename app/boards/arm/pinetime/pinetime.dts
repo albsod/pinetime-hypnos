@@ -128,7 +128,6 @@
 		ram-param = [00 F0];
 		rgb-param = [CD 08 14];
 	};
-
 	mx25r64: mx25r6435f@1 {
 		compatible = "jedec,spi-nor";
 		reg = <1>;
@@ -137,13 +136,26 @@
 		jedec-id = [0b 40 16];
 		size = <67108864>;
 		has-be32k;
+		/* The preinstalled bootloader expects this layout */
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot1_partition: partition@40000 {
+					 label = "image-1";
+					 reg = <0x00040000 0x71480>;
+			};
+		};
 	};
 };
 
 &flash0 {
 	/*
+	/* The preinstalled bootloader expects this layout
 	 * For more information, see:
-	 * http://docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+	 * https://docs.zephyrproject.org/latest/guides/dts/legacy-macros.html#legacy-flash-partitions
+	 * https://github.com/endian-albin/pinetime-hypnos/issues/36
 	 */
 	partitions {
 		compatible = "fixed-partitions";
@@ -152,23 +164,15 @@
 
 		boot_partition: partition@0 {
 			label = "mcuboot";
-			reg = <0x00000000 0xc000>;
+			reg = <0x00000000 0x8010>;
 		};
-		slot0_partition: partition@c000 {
+		slot0_partition: partition@8010 {
 			label = "image-0";
-			reg = <0x0000C000 0x32000>;
+			reg = <0x00008010 0x71480>;
 		};
-		slot1_partition: partition@3e000 {
-			label = "image-1";
-			reg = <0x0003E000 0x32000>;
-		};
-		scratch_partition: partition@70000 {
+		scratch_partition: partition@79490 {
 			label = "image-scratch";
-			reg = <0x00070000 0xa000>;
-		};
-		storage_partition: partition@7a000 {
-			label = "storage";
-			reg = <0x0007a000 0x00006000>;
+			reg = <0x00079490 0x7640>;
 		};
 	};
 };
