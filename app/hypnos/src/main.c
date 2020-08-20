@@ -8,6 +8,7 @@
  */
 
 #include <zephyr.h>
+#include <dfu/mcuboot.h>
 #include "backlight.h"
 #include "battery.h"
 #include "bt.h"
@@ -43,6 +44,11 @@ void main(void)
 	event_handler_init();
 	gfx_update();
 	backlight_init();
+	/* TODO: Ask the user to confirm the new image */
+	if (!boot_is_img_confirmed()) {
+		LOG_DBG("Confirming new firmware image.");
+	}
+	(void)boot_write_img_confirmed();
 }
 
 void main_thread(void)
