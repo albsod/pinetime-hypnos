@@ -13,19 +13,29 @@
 #include <drivers/gpio.h>
 #include <drivers/sensor/cst816s.h>
 
-#define CST816S_I2C_ADDRESS		CONFIG_CST816S_I2C_ADDR
+#define CST816S_I2C_ADDRESS	            0x15
 
-#define CST816S_REG_DATA 0x00
+#define CST816S_CHIP_ID                 0xB4
+
+/***
+ * TODO
+ * - CST816S_REG_XPOS_H : Bits 6 and 7 => Action ? 0:Down - 1:Up - 2:Contact
+ * - CST816S_REG_YPOS_H : Bits 4-7 => fingerID
+ * - Reg addr 0x07 : Pressure ?
+ * - Reg addr 0x08 : Bit 4-7: Area ?
+ */
+#define CST816S_REG_DATA                0x00
 #define CST816S_REG_GESTURE_ID          0x01	// See CST816S_GESTURE_XXX definitions. 8-bit value.
 #define CST816S_REG_FINGER_NUM          0x02	// Number of fingers. 8-bit value.
 #define CST816S_REG_XPOS_H              0x03	// X coordinate 4 digits high X (Bit 3-0 : Xpos[11:8])
 #define CST816S_REG_XPOS_L              0x04	// X coordinate 8 bits lower (Xpos[7:0])
 #define CST816S_REG_YPOS_H              0x05	// Y coordinate 4 digits high Y (Bit 3-0 : Ypos[11:8])
 #define CST816S_REG_YPOS_L              0x06	// Y coordinate 8 bits lower (Ypos[7:0])
-#define CST816S_REG_BPC1L               0xB0	// High 8 bits of BPC0 value
+#define CST816S_REG_BPC0H               0xB0	// High 8 bits of BPC0 value
 #define CST816S_REG_BPC0L               0xB1	// Lower 8 bits of BPC0 value
 #define CST816S_REG_BPC1H               0xB2	// High 8 bits of BPC1 value
 #define CST816S_REG_BPC1L               0xB3	// Lower 8 bits of BPC1 value.
+#define CST816S_REG_POWER_MODE			0xA5
 #define CST816S_REG_CHIP_ID             0xA7	// Chip model
 #define CST816S_REG_PROJ_ID             0xA8	// Project number
 #define CST816S_REG_FW_VERSION          0xA9	// Firmware Version. 8-bit value.
@@ -70,7 +80,10 @@
 
 #define CST816S_IOCTL_SOFT_RTS     (1<<2)	// The main control can achieve the soft reset function of touch by pulling down the IRQ pin. 0: Disables soft reset. 1: Enables soft reset.
 #define CST816S_IOCTL_IIC_OD       (1<<1)	// IIC pin drive mode, default is resistor pull-up. 0: resistive pull-up  1:OD
-#define CST816S_IOCTL_EN_1V8	   (1<<0)	// IIC and IRQ pin level selection, default is VDD level. 0:VDD  1:1.8V
+#define CST816S_IOCTL_EN_1V8       (1<<0)	// IIC and IRQ pin level selection, default is VDD level. 0:VDD  1:1.8V
+
+#define CST816S_POWER_MODE_SLEEP          (0x03)
+#define CST816S_POWER_MODE_EXPERIMENTAL   (0x05)
 
 typedef struct {
 	int16_t x;
@@ -80,12 +93,15 @@ typedef struct {
 struct cst816s_data {
 	struct device *i2c;
 
+	uint8_t chip_id;
+
 	enum cst816s_gesture gesture;
 	uint8_t number_touch_point;
 
 	coordinate_t touch_point_1;
 	coordinate_t touch_point_2;
 
+	struct device *reset_gpio;
 #ifdef CONFIG_CST816S_TRIGGER
 	struct device *gpio;
 	struct gpio_callback gpio_cb;

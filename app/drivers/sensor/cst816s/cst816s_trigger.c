@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define DT_DRV_COMPAT hynitron_cst816s
+
 #include <device.h>
 #include <drivers/i2c.h>
 #include <sys/util.h>
@@ -12,6 +14,8 @@
 #include "cst816s.h"
 
 #include <logging/log.h>
+
+#define INTERRUPT_PIN 	DT_INST_GPIO_PIN(0, int1_gpios)
 
 LOG_MODULE_DECLARE(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 
@@ -50,7 +54,6 @@ static void cst816s_thread_cb(void *arg)
 	struct device *dev = arg;
 	struct cst816s_data *drv_data = dev->driver_data;
 
-
 	if (drv_data->data_ready_handler != NULL) {
 		drv_data->data_ready_handler(dev, &drv_data->data_ready_trigger);
 	}
@@ -62,23 +65,10 @@ static void cst816s_thread(int dev_ptr, int unused)
 {
 	struct device *dev = INT_TO_POINTER(dev_ptr);
 	struct cst816s_data *drv_data = dev->driver_data;
-	tellerio++;
 
-	//reset touchscreen
-
-
-
-	//   gpio_pin_configure(drv_data->gpio, 10,GPIO_DIR_OUT); //push button out
-	//  gpio_pin_write(drv_data->gpio, 10, 0); //set port low 
-	// gpio_pin_write(drv_data->gpio, 10, 1); //set port high
-	//
-
-
-
-	if (tellerio > 200) tellerio=0;
 	ARG_UNUSED(unused);
 
-	while (1) {
+	while (true) {
 		k_sem_take(&drv_data->gpio_sem, K_FOREVER);
 		cst816s_thread_cb(dev);
 	}
@@ -108,7 +98,6 @@ int cst816s_trigger_set(struct device *dev,
 			return 0;
 		}
 		drv_data->data_ready_trigger = *trig;
-
 	} 
 	else {
 		return -ENOTSUP;
@@ -120,31 +109,27 @@ int cst816s_trigger_set(struct device *dev,
 int cst816s_init_interrupt(struct device *dev)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
+	
 	/* setup data ready gpio interrupt */
-	drv_data->gpio = device_get_binding(CONFIG_CST816S_GPIO_DEV_NAME);
+	drv_data->gpio = device_get_binding(DT_INST_GPIO_LABEL(0, int1_gpios));
 	if (drv_data->gpio == NULL) {
 		LOG_DBG("Cannot get pointer to %s device",
-				CONFIG_CST816S_GPIO_DEV_NAME);
+				DT_INST_GPIO_LABEL(0, int1_gpios));
 		return -EINVAL;
 	}
 
-
-
-	gpio_pin_interrupt_configure(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM, GPIO_INPUT | GPIO_PULL_UP| GPIO_INT_EDGE_FALLING | GPIO_ACTIVE_LOW);
-
-	//	gpio_pin_configure(drv_data->gpio, CONFIG_CST816S_GPIO_PIN_NUM
-	//			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_LEVEL |
-	//			   GPIO_INT_ACTIVE_HIGH | GPIO_INT_DEBOUNCE);
-
 	gpio_init_callback(&drv_data->gpio_cb,
 			cst816s_gpio_callback,
-			BIT(CONFIG_CST816S_GPIO_PIN_NUM));
+			BIT(INTERRUPT_PIN));
 
 	if (gpio_add_callback(drv_data->gpio, &drv_data->gpio_cb) < 0) {
 		LOG_DBG("Could not set gpio callback");
 		return -EIO;
 	}
 
+	gpio_pin_configure(drv_data->gpio, 
+			INTERRUPT_PIN, GPIO_INPUT | GPIO_PULL_UP 
+			| GPIO_INT_EDGE_FALLING | GPIO_ACTIVE_LOW);
 
 #if defined(CONFIG_CST816S_TRIGGER_OWN_THREAD)
 	k_sem_init(&drv_data->gpio_sem, 0, UINT_MAX);
