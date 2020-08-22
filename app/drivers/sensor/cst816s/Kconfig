@@ -14,46 +14,6 @@ menuconfig CST816S
 
 if CST816S
 
-config CST816S_NAME
-	string "Driver name"
-	default "CST816S" if CST816S_CHIP_CST816S
-	help
-	  Device name with which the sensor is identified.
-
-config CST816S_GPIO_DEV_NAME
-	string "GPIO device"
-	default "GPIO_0"
-	depends on CST816S_TRIGGER
-	help
-	  The device name of the GPIO device to which the chip's interrupt pins
-	  are connected.
-
-config CST816S_GPIO_PIN_NUM
-	int "Interrupt GPIO pin number"
-	default 28
-	depends on CST816S_TRIGGER
-	help
-	  The number of the GPIO on which the interrupt signal from the chip
-	  will be received.
-
-config CST816S_THREAD_PRIORITY
-	int "Thread priority"
-	depends on CST816S_TRIGGER_OWN_THREAD
-	default 10
-	help
-	  Priority of thread used by the driver to handle interrupts.
-
-config CST816S_THREAD_STACK_SIZE
-	int "Thread stack size"
-	depends on CST816S_TRIGGER_OWN_THREAD
-	default 1024
-	help
-	  Stack size of thread used by the driver to handle interrupts.
-
-
-
-
-
 choice
 	prompt "Trigger mode"
 	default CST816S_TRIGGER_NONE
@@ -88,37 +48,8 @@ config CST816S_THREAD_PRIORITY
 config CST816S_THREAD_STACK_SIZE
 	int "Thread stack size"
 	depends on CST816S_TRIGGER_OWN_THREAD && CST816S_TRIGGER
-	default 1024
+	default 512
 	help
 	  Stack size of thread used by the driver to handle interrupts.
-
-config CST816S_ACTIVITY_THRESHOLD
-	int "Upper threshold value"
-	default 1000
-	help
-	  Unsigned value that the adxl362 samples are
-	  compared to in activity trigger mode.
-
-config CST816S_INACTIVITY_THRESHOLD
-	int "Lower threshold value"
-	default 100
-	help
-	  Unsigned value that the adxl362 samples are
-	  compared to in inactivity trigger mode.
-
-config CST816S_INTERRUPT_MODE
-	int "Activity and inactivity interrupt mode"
-	default 0
-	help
-	  Unsigned value that sets the CST816S in different
-	  interrupt modes.
-	  0 - Default mode
-	  1 - Linked mode
-	  3 - Loop mode
-
-
-
-
-
 
 endif # CST816S

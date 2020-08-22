@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2020 Stephane Dorre <stephane.dorre@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -30,7 +31,6 @@ int cst816s_attr_set(struct device *dev,
 		return -ENOTSUP;
 	}
 
-
 	return 0;
 }
 
@@ -60,7 +60,6 @@ static void cst816s_thread_cb(void *arg)
 }
 
 #ifdef CONFIG_CST816S_TRIGGER_OWN_THREAD
-int tellerio;
 static void cst816s_thread(int dev_ptr, int unused)
 {
 	struct device *dev = INT_TO_POINTER(dev_ptr);

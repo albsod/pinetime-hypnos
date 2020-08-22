@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016 Intel Corporation
+ * Copyright (c) 2020 Stephane Dorre <stephane.dorre@gmail.com>
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -21,10 +22,9 @@ LOG_MODULE_REGISTER(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
-	uint8_t buf[255];
+	uint8_t buf[9];
 	uint8_t msb;
 	uint8_t lsb;
-	//uint8_t id = 0U;
 	__ASSERT_NO_MSG(chan == SENSOR_CHAN_ALL);
 
 	/*
@@ -32,7 +32,7 @@ static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
 	 * a burst read can be used to read all the samples
 	 */
 	if (i2c_burst_read(drv_data->i2c, CST816S_I2C_ADDRESS,
-				CST816S_REG_DATA, buf, 255) < 0) {
+				CST816S_REG_DATA, buf, 9) < 0) {
 		LOG_DBG("Could not read data");
 		return -EIO;
 	}
@@ -72,11 +72,11 @@ static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
 
 	msb = buf[CST816S_REG_YPOS_H] & 0x0f;
 	lsb = buf[CST816S_REG_YPOS_L];
-	drv_data->touch_point_1.y = (msb<<8)|lsb; // todo check if buf[5] is indeed Y
+	drv_data->touch_point_1.y = (msb<<8)|lsb;
 
+	drv_data->action = (enum cst816s_action)(buf[CST816S_REG_XPOS_H] >> 6);
 	return 0;
 }
-
 
 static int cst816s_channel_get(struct device *dev,
 		enum sensor_channel chan,
@@ -84,12 +84,12 @@ static int cst816s_channel_get(struct device *dev,
 {
 	struct cst816s_data *drv_data = dev->driver_data;
 
-	if (chan == CST816S_CHAN_GESTURE) {
+	if ((uint16_t)chan == CST816S_CHAN_GESTURE) {
 		val->val1=drv_data->gesture;
-	} else if (chan == CST816S_CHAN_TOUCH_POINT_1) {
+	} else if ((uint16_t)chan == CST816S_CHAN_TOUCH_POINT_1) {
 		val->val1=drv_data->touch_point_1.x;
 		val->val2=drv_data->touch_point_1.y;
-	} else if (chan == CST816S_CHAN_TOUCH_POINT_2) {
+	} else if ((uint16_t)chan == CST816S_CHAN_TOUCH_POINT_2) {
 		val->val1=drv_data->touch_point_2.x;
 		val->val2=drv_data->touch_point_2.y;
 	} else {
@@ -112,8 +112,6 @@ static void cst816s_chip_reset(struct device* dev)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
 
-	/* TODO: We may need to wait some time between setting up the reset pin and sending the reset signal
-	*/
 	gpio_pin_set_raw(drv_data->reset_gpio, RESET_PIN, 0);
 	k_msleep(5);
 	gpio_pin_set_raw(drv_data->reset_gpio, RESET_PIN, 1);
@@ -123,7 +121,6 @@ static void cst816s_chip_reset(struct device* dev)
 static int cst816s_chip_init(struct device *dev)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
-	uint8_t config_register;
 
 	cst816s_chip_reset(dev);
 
@@ -139,24 +136,18 @@ static int cst816s_chip_init(struct device *dev)
 
 	if (i2c_reg_update_byte(drv_data->i2c, CST816S_I2C_ADDRESS,
 				CST816S_REG_MOTION_MASK,
-				(CST816S_MOTION_EN_DCLICK), CST816S_MOTION_EN_DCLICK) < 0) {
+				(CST816S_MOTION_EN_DCLICK), (CST816S_MOTION_EN_DCLICK)) < 0) {
 		LOG_ERR("Could not enable double click");
 		return -EIO;
 	}
 
-	if (i2c_reg_read_byte(drv_data->i2c, CST816S_I2C_ADDRESS,
-			      CST816S_REG_IRQ_CTL, &config_register) < 0) {
-		LOG_ERR("Could not read irq config");
-		return -EIO;
-	}
-
-	LOG_WRN("IRQ config 0x%x", config_register);
+	return 0;
 }
 
 int cst816s_init(struct device *dev)
 {
 	struct cst816s_data *drv_data = dev->driver_data;
-	//uint8_t id = 0U;
+
 	drv_data->i2c = device_get_binding(DT_INST_BUS_LABEL(0));
 	if (drv_data->i2c == NULL) {
 		LOG_DBG("Could not get pointer to %s device",
@@ -165,7 +156,8 @@ int cst816s_init(struct device *dev)
 	}
 
 	/* setup reset gpio */
-	drv_data->reset_gpio = device_get_binding(DT_INST_GPIO_LABEL(0, reset_gpios));
+	drv_data->reset_gpio = device_get_binding(
+			DT_INST_GPIO_LABEL(0, reset_gpios));
 	if (drv_data->reset_gpio == NULL) {
 		LOG_DBG("Cannot get pointer to %s device",
 		    DT_INST_GPIO_LABEL(0, reset_gpios));

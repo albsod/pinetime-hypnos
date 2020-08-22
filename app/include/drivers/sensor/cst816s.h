@@ -20,6 +20,12 @@ enum cst816s_gesture {
     LONG_PRESS,
 };
 
+enum cst816s_action {
+    DOWN = 0,
+    UP = 1,
+    CONTACT = 2,
+};
+
 enum cst816s_channel {
 	CST816S_CHAN_GESTURE = SENSOR_CHAN_PRIV_START,
 	CST816S_CHAN_TOUCH_POINT_1,
@@ -27,21 +33,16 @@ enum cst816s_channel {
 };
 
 /* If necessary at some point */
-// enum cst816s_attribute {
-// 	BMA421_ATTR_STEP_CNT_ENABLE = SENSOR_ATTR_PRIV_START,
-// 	BMA421_ATTR_STEP_CNT_WATERMARK,
-// 	BMA421_ATTR_STEP_CNT_RESET,
-// 	BMA421_ATTR_STEP_CNT_PARAM,
-// 	BMA421_ATTR_STEP_DTC_ENABLE,
-// 	BMA421_ATTR_ANY_MOT_CONFIG,
-// 	BMA421_ATTR_NO_MOT_CONFIG,
-// 	BMA421_ATTR_VERSION_CONFIG,
-// };
+/*
+enum cst816s_attribute {
+ 	CST816S_ATTR_XXX = SENSOR_ATTR_PRIV_START,
+ 	CST816S_ATTR_YYY,
+};
 
-// enum cts816s_trigger {
-// 	BMA421_TRIG_STEP_COUNT = SENSOR_TRIG_PRIV_START,
-// 	BMA421_TRIG_STEP_DETECT,
-// 	BMA421_TRIG_NO_MOTION,
-// };
+enum cts816s_trigger {
+ 	CST816S_TRIG_XXX = SENSOR_TRIG_PRIV_START,
+ 	CST816S_TRIG_YYY,
+};
+*/
 
 #endif /* ZEPHYR_INCLUDE_DRIVERS_SENSOR_CTS816A_H_ */
