@@ -26,9 +26,9 @@ void bt_thread(void);
 #define PRIORITY 7
 
 K_THREAD_DEFINE(bt_id, STACKSIZE, bt_thread, NULL, NULL, NULL,
-                PRIORITY, 0, 0);
+		PRIORITY, 0, 0);
 K_THREAD_DEFINE(main_id, STACKSIZE, main_thread, NULL, NULL, NULL,
-                PRIORITY, 0, 0);
+		PRIORITY, 0, 0);
 
 /* ******** Functions ******** */
 void main(void)

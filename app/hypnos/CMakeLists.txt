@@ -26,4 +26,3 @@ target_sources(app PRIVATE ${app_sources})
 string(TIMESTAMP CURRENT_TIME %Y-%m-%dT%H:%M:%S)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCURRENT_TIME_OF_BUILD=\"${CURRENT_TIME}\"")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -include clock.h")

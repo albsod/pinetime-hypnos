@@ -28,7 +28,8 @@ void backlight_init()
 	LOG_DBG("Backlight init: Done");
 }
 
-void backlight_enable(bool enable) {
+void backlight_enable(bool enable)
+{
 	gpio_pin_set_raw(backlight_dev, BACKLIGHT, enable ? 0 : 1);
 	backlight_enabled = enable;
 }

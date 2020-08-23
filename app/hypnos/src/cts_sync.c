@@ -15,6 +15,7 @@
 #include "gfx.h"
 #include "log.h"
 #include "cts_sync.h"
+#include "clock.h"
 
 /* ********** Definitions ********** */
 #define CTS_SYNC_INTERVAL K_SECONDS(60)

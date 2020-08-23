@@ -43,6 +43,6 @@ manifest:
       revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
     - name: zephyr
       west-commands: scripts/west-commands.yml
-      revision: b8c78e254ff875680e99c9f131fbe285c4575927
+      revision: v2.3.0
   self:
     path: app
