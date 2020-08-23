@@ -11,3 +11,6 @@ properties:
             int1-gpios:
                       type: phandle-array
                       required: false
+            reset-gpios:
+                      type: phandle-array
+                      required: false

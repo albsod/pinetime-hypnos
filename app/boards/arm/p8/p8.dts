@@ -18,11 +18,11 @@ PO.23 LCD backlight
 
 	chosen {
 		zephyr,sram = &sram0;
-                zephyr,console = &uart0;
-               // zephyr,shell-uart = &uart0;
-                //zephyr,uart-mcumgr = &uart0;
-                //zephyr,bt-mon-uart = &uart0;
-                //zephyr,bt-c2h-uart = &uart0;
+		zephyr,console = &uart0;
+		// zephyr,shell-uart = &uart0;
+		//zephyr,uart-mcumgr = &uart0;
+		//zephyr,bt-mon-uart = &uart0;
+		//zephyr,bt-c2h-uart = &uart0;
 		zephyr,flash = &flash0;
 		//zephyr,flash = &mx25r64;
 		zephyr,code-partition = &slot0_partition;
@@ -94,13 +94,13 @@ PO.23 LCD backlight
 		reg = <0x44>;
 		label = "HRS3300";
 	};
-        cst816s@15 {
-                compatible = "hynitron,cst816s";
-                label = "CST816S";
-                reg = <0x15>;
-                int1-gpios = <&gpio0 28 0>;
-        };
-
+	cst816s@15 {
+		compatible = "hynitron,cst816s";
+		label = "CST816S";
+		reg = <0x15>;
+		int1-gpios = <&gpio0 28 0>;
+		reset-gpios = <&gpio0 10 0>;
+	};
 };
 
 
@@ -140,7 +140,7 @@ PO.23 LCD backlight
 
 		};
 
-		mx25r64: mx25r6435f@1 {
+	mx25r64: mx25r6435f@1 {
 		compatible = "jedec,spi-nor";
 		reg = <1>;
 		spi-max-frequency = <1000000>;
@@ -151,8 +151,6 @@ PO.23 LCD backlight
 	};
 
 };
-
-
 
 &flash0 {
 	/*
@@ -190,11 +188,11 @@ PO.23 LCD backlight
 there is no serial port on the p8 but the motor pin and button pin could be used ... (not tested)
 */
 &uart0 {
-        status = "okay";
-        compatible = "nordic,nrf-uart";
-        current-speed = <115200>;
-        tx-pin = <15>;
-        rx-pin = <16>;
+	status = "okay";
+	compatible = "nordic,nrf-uart";
+	current-speed = <115200>;
+	tx-pin = <15>;
+	rx-pin = <16>;
 };
 
 &adc {
