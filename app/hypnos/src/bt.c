@@ -45,9 +45,8 @@ struct k_sem enable_bt_sem;
 struct k_sem disable_bt_sem;
 
 static const struct bt_data ad[] = {
-        BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
-        BT_DATA_BYTES(BT_DATA_UUID16_ALL,
-		      0x0d, 0x18, 0x0f, 0x18, 0x05, 0x18),
+	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+	BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x0d, 0x18, 0x0f, 0x18, 0x05, 0x18),
 };
 static struct bt_conn_cb m_conn_callbacks = {
 	.connected = connected,
@@ -111,25 +110,25 @@ void bt_adv_start(void)
 {
 	LOG_DBG("bt_le_adv_start");
 	int err = bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0);
-        if (err) {
-                LOG_ERR("Advertising failed to start (err %d)", err);
-                return;
-        }
+	if (err) {
+		LOG_ERR("Advertising failed to start (err %d)", err);
+		return;
+	}
 
-        LOG_DBG("Advertising successfully started");
+	LOG_DBG("Advertising successfully started");
 }
 
 void bt_init(void)
 {
-        int err = bt_enable(NULL);
-        if (err) {
-                LOG_ERR("Bluetooth init failed (err %d)", err);
-                return;
-        }
+	int err = bt_enable(NULL);
+	if (err) {
+		LOG_ERR("Bluetooth init failed (err %d)", err);
+		return;
+	}
 
-        bt_ready();
+	bt_ready();
 	bt_adv_start();
-        cts_sync_init();
+	cts_sync_init();
 	bt_initialized = true;
 }
 

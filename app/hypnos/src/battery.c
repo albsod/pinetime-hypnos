@@ -68,16 +68,16 @@ static const struct adc_channel_cfg m_1st_channel_cfg = {
 /* ********** ********** FUNCTIONS ********** ********** */
 void battery_init()
 {
-        percentage_dev = device_get_binding("ADC_0");
-        if (percentage_dev == NULL) {
-                LOG_ERR("Failed to get binding for ADC_0 device!");
-        }
+	percentage_dev = device_get_binding("ADC_0");
+	if (percentage_dev == NULL) {
+		LOG_ERR("Failed to get binding for ADC_0 device!");
+	}
 
-        if (adc_channel_setup(percentage_dev, &m_1st_channel_cfg) < 0) {
-                LOG_ERR("Failed to setup channel for adc!");
-        }
+	if (adc_channel_setup(percentage_dev, &m_1st_channel_cfg) < 0) {
+		LOG_ERR("Failed to setup channel for adc!");
+	}
 
-        LOG_DBG("Battery status init: Done");
+	LOG_DBG("Battery status init: Done");
 }
 
 void battery_update_percentage()
@@ -94,7 +94,7 @@ void battery_update_charging_status(bool value)
 
 bool battery_get_charging_status()
 {
-        return charging;
+	return charging;
 }
 
 uint32_t battery_raw_to_mv(int16_t raw)
