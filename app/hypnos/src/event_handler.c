@@ -8,6 +8,7 @@
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
 #include <stdbool.h>
+#include "accelerometer.h"
 #include "backlight.h"
 #include "battery.h"
 #include "bt.h"
@@ -87,6 +88,8 @@ void event_handler_init()
 	clock_show_time();
 	battery_show_status();
 
+	accelerometer_log_data();
+
 	LOG_DBG("Event handler init: Done");
 }
 /* ********** ************ ********** */
@@ -150,6 +153,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
+	accelerometer_log_data();
 	gfx_update();
 }
 
