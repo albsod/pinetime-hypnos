@@ -132,11 +132,6 @@ void gfx_battery_set_label(enum battery_symbol s)
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
 }
 
-void gfx_gui_set_screen(struct gui *g, enum screen s)
-{
-	g->sc = s;
-}
-
 void gfx_show_info(void)
 {
 	lv_label_set_text(date_label, "Hypnos");
