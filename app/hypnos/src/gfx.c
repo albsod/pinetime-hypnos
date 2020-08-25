@@ -20,14 +20,14 @@ static lv_obj_t *battery_label;
 static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
+static lv_style_t style;
+static lv_style_t style_time;
+static lv_style_t style_date;
 
 /* ********** Functions ********** */
 void gfx_init(void)
 {
 	/* Create styles for time, date and the rest */
-	static lv_style_t style;
-	static lv_style_t style_time;
-	static lv_style_t style_date;
 	lv_style_copy(&style, &lv_style_plain);
 	lv_style_copy(&style_time, &lv_style_plain);
 	lv_style_copy(&style_date, &lv_style_plain);
@@ -54,6 +54,7 @@ void gfx_init(void)
 	style_time.body.main_color = LV_COLOR_BLACK;
 	style_time.body.grad_color = LV_COLOR_BLACK;
 	style_time.text.font = &rubik_regular_68;
+
 	style_time.text.color = LV_COLOR_WHITE;
 	style_time.text.color = LV_COLOR_WHITE;
 	lv_obj_set_style(lv_scr_act(), &style_time);
@@ -79,7 +80,6 @@ void gfx_update(void)
 {
 	lv_task_handler();
 }
-
 
 void gfx_time_set_label(char *str)
 {
@@ -130,4 +130,21 @@ void gfx_battery_set_label(enum battery_symbol s)
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_EMPTY);
 	}
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
+}
+
+void gfx_gui_set_screen(struct gui *g, enum screen s)
+{
+	g->sc = s;
+}
+
+void gfx_show_info(void)
+{
+	lv_label_set_text(date_label, "Hypnos");
+	style_date.text.color = LV_COLOR_RED;
+	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
+}
+
+void gfx_show_date(void)
+{
+	style_date.text.color = LV_COLOR_YELLOW;
 }
