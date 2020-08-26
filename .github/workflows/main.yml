@@ -21,7 +21,8 @@ jobs:
   build:
     strategy:
       matrix:
-        device: [pinetime, p8]
+        #device: [pinetime, p8]
+        device: [pinetime]
     runs-on: ubuntu-latest
     name: Build and upload
     steps:
