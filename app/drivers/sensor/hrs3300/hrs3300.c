@@ -2,12 +2,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#define DT_DRV_COMPAT hx_hrs3300
+
 #include <stdlib.h>
 #include <logging/log.h>
 #include <shell/shell.h>
-#include <sensor.h>
-#include <hrs3300.h>
+#include <drivers/sensor.h>
 #include <drivers/i2c.h>
+
+#include "hrs3300.h"
 
 #define MY_REGISTER3 (*(volatile uint8_t*)0x2000F002)
 
@@ -15,24 +18,48 @@ LOG_MODULE_REGISTER(HRS3300, CONFIG_SENSOR_LOG_LEVEL);
 
 #define HRS3300_I2C_ADDRESS  0x44
 
-#define HRS3300_PDRIVE_12_5 0
-#define HRS3300_PDRIVE_20 1
-#define HRS3300_PDRIVE_30 2
-#define HRS3300_PDRIVE_40 3
+#define HRS3300_DEVICE_ID       0x21
 
-#define HRS3300_DEVICE_ID_ADDR	0x00
-#define HRS3300_DEVICE_ID 0x21
+#define HRS3300_REG_DEVICE_ID	0x00
+#define HRS3300_REG_ENABLED	0x01
+#define HRS3300_REG_C1DATAM	0x08
+#define HRS3300_REG_C0DATAM	0x09
+#define HRS3300_REG_C0DATAH	0x0A
+#define HRS3300_REG_LED_DRIVER	0x0C
+#define HRS3300_REG_C1DATAH	0x0D
+#define HRS3300_REG_C1DATAL	0x0E
+#define HRS3300_REG_C0DATAL	0x0F
+#define HRS3300_REG_RES		0x16
+#define HRS3300_REG_HGAIN	0x17
 
-#define HRS3300_ENABLED_ADDR	0x01
+/* HRS Waiting time between each conversion. */
+#define HRS3300_HWT_800MS       0x0
+#define HRS3300_HWT_400MS       0x1
+#define HRS3300_HWT_200MS       0x2
+#define HRS3300_HWT_100MS       0x3
+#define HRS3300_HWT_75MS        0x4
+#define HRS3300_HWT_50MS        0x5
+#define HRS3300_HWT_12_5MS      0x6
+#define HRS3300_HWT_0MS         0x7
 
-#define HRS3300_HWT_800MS 0x0
-#define HRS3300_HWT_400MS 0x1
-#define HRS3300_HWT_200MS 0x2
-#define HRS3300_HWT_100MS 0x3
-#define HRS3300_HWT_75MS 0x4
-#define HRS3300_HWT_50MS 0x5
-#define HRS3300_HWT_12_5MS 0x6
-#define HRS3300_HWT_0MS 0x7
+/* Led Drive current setup. */
+#define HRS3300_PDRIVE_12_5MA   0x0
+#define HRS3300_PDRIVE_20MA     0x1
+#define HRS3300_PDRIVE_30MA     0x2
+#define HRS3300_PDRIVE_40MA     0x3
+
+/* ALS ADC resolution. */
+#define HRS3300_ALS_RES_8BITS   0x0
+#define HRS3300_ALS_RES_9BITS   0x1
+#define HRS3300_ALS_RES_10BITS  0x2
+#define HRS3300_ALS_RES_11BITS  0x3
+#define HRS3300_ALS_RES_12BITS  0x4
+#define HRS3300_ALS_RES_13BITS  0x5
+#define HRS3300_ALS_RES_14BITS  0x6
+#define HRS3300_ALS_RES_15BITS  0x7
+#define HRS3300_ALS_RES_16BITS  0x8
+#define HRS3300_ALS_RES_17BITS  0x9
+#define HRS3300_ALS_RES_18BITS  0xA
 
 struct hrs3300_reg_enable {
 	u8_t reserved	:3;
@@ -41,7 +68,6 @@ struct hrs3300_reg_enable {
 	u8_t enable	:1;
 };
 
-#define HRS3300_HRS_LED_DRIVER_SET_ADDR 0x0C
 struct hrs3300_reg_hrs_led_driver_set {
 	u8_t reserved	:5;
 	u8_t pon	:1;
@@ -49,14 +75,11 @@ struct hrs3300_reg_hrs_led_driver_set {
 	u8_t reserved1	:1;
 };
 
-
-#define HRS3300_RESOLUTION_ADDR 0x16
 struct hrs3300_reg_resolution {
 	u8_t als_res	:4;
 	u8_t reserved 	:4;
 };
 
-#define HRS3300_HGAIN_ADDR 0x17
 struct hrs3300_reg_hgain {
 	u8_t reserved 	:2;
 	u8_t hgain	:3;
@@ -85,19 +108,19 @@ struct hrs3300_data {
 struct hrs3300_config {
 };
 
-static u32_t get_hrs_adc(u8_t *buf)
+static u32_t hrs3300_extract_hrs_adc(u8_t *buf)
 {
-	return	((u32_t)buf[7] & 0xF) |
-		(((u32_t)buf[2] & 0xf) << 4) |
+	return	((u32_t)buf[7] & 0xFu) |
+		(((u32_t)buf[2] & 0xFu) << 4) |
 		((u32_t)buf[1] << 8) |
-		(((u32_t)buf[7] & 0x30) << 16);
+		(((u32_t)(buf[7] >> 4) & 0x3u) << 16);
 }
 
-static u32_t get_als(u8_t *buf)
+static u32_t hrs3300_extract_als(u8_t *buf)
 {
-	return	((u32_t)buf[6] & 0x7) |
+	return	((u32_t)buf[6] & 0x7u) |
 		((u32_t)buf[0] << 3) |
-		((u32_t)buf[5] << 10);
+		((u32_t)(buf[5] & 0x7Fu) << 11);
 }
 
 static int hrs3300_sample_fetch(struct device *dev, enum sensor_channel chan)
@@ -106,15 +129,16 @@ static int hrs3300_sample_fetch(struct device *dev, enum sensor_channel chan)
 	u8_t buf[8];
 	int err;
 
-	err = i2c_burst_read(data->i2c, HRS3300_I2C_ADDRESS, 0x8,
+	/* Burst read all DATA register in one shot (from 0x8 to 0xF) */
+	err = i2c_burst_read(data->i2c, HRS3300_I2C_ADDRESS, HRS3300_REG_C1DATAM,
 				buf, sizeof(buf));
 	if (err < 0) {
 		LOG_ERR("Failed to read data (err:%d)", err);
 		return err;
 	}
 
-	data->raw[0] = get_hrs_adc(buf);
-	data->raw[1] = get_als(buf);
+	data->raw[0] = hrs3300_extract_hrs_adc(buf);
+	data->raw[1] = hrs3300_extract_als(buf);
 
 	return 0;
 }
@@ -152,14 +176,14 @@ static int hrs3300_init(struct device *dev)
 	int err;
 
 	/* Get the I2C device */
-	data->i2c = device_get_binding(DT_INST_0_HX_HRS3300_BUS_NAME);
+	data->i2c = device_get_binding(DT_INST_BUS_LABEL(0));
 	if (!data->i2c) {
 		LOG_ERR("Could not find I2C device");
 		return -EINVAL;
 	}
 
 	err = i2c_reg_read_byte(data->i2c, HRS3300_I2C_ADDRESS,
-				HRS3300_DEVICE_ID_ADDR, &device_id);
+				HRS3300_DEVICE_ID, &device_id);
 	if ((err < 0) || (device_id != HRS3300_DEVICE_ID)) {
 		LOG_ERR("Failed to read device id (%d)", err);
 		return err;
@@ -268,37 +292,37 @@ static struct hrs3300_config hrs3300_config;
 static struct hrs3300_data hrs3300_data = {
 	.config = {
 		{
-			.addr = HRS3300_ENABLED_ADDR,
+			.addr = HRS3300_REG_ENABLED,
 			.reg = {
 				.enable = {
-					.enable = 0,
-					.pdrive1 = (HRS3300_PDRIVE_40 & 0x2) ?
+					.enable = 1,
+					.pdrive1 = (HRS3300_PDRIVE_40MA & 0x2) ?
 							1 : 0,
 					.hwt = HRS3300_HWT_12_5MS
 				}
 			}
 		},
 		{
-			.addr = HRS3300_HRS_LED_DRIVER_SET_ADDR,
+			.addr = HRS3300_REG_LED_DRIVER,
 			.reg = {
 				.hrs_led_driver_set = {
 					.pon = 1,
-					.pdrive0 = HRS3300_PDRIVE_40 & 0x1,
+					.pdrive0 = HRS3300_PDRIVE_40MA & 0x1,
 					.reserved = 0x8
 				}
 			}
 		},
 		{
-			.addr = HRS3300_RESOLUTION_ADDR,
+			.addr = HRS3300_REG_RES,
 			.reg = {
 				.resolution = {
 					.reserved = 0x6,
-					.als_res = 0x8 /* 16bit*/
+					.als_res = HRS3300_ALS_RES_16BITS
 				}
 			}
 		},
 		{
-			.addr = HRS3300_HGAIN_ADDR,
+			.addr = HRS3300_REG_HGAIN,
 			.reg = {
 				.hgain = {
 					.hgain = 0
@@ -308,9 +332,8 @@ static struct hrs3300_data hrs3300_data = {
 	}
 };
 
-DEVICE_AND_API_INIT(hrs3300, DT_INST_0_HX_HRS3300_LABEL, hrs3300_init,
-		&hrs3300_data, &hrs3300_config,
-		POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,
+DEVICE_AND_API_INIT(hrs3300, DT_INST_LABEL(0), hrs3300_init, &hrs3300_data, 
+		&hrs3300_config, POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,
 		&hrs3300_driver_api);
 
 static int cmd_enable(const struct shell *shell, size_t argc, char **argv)
