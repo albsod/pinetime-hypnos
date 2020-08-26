@@ -7,6 +7,7 @@
 #include <lvgl.h>
 #include "gfx.h"
 #include "log.h"
+#include "version.h"
 
 /* ********** Macros and constants ********** */
 LV_FONT_DECLARE(rubik_regular_68);
@@ -20,6 +21,7 @@ static lv_obj_t *battery_label;
 static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
+static lv_obj_t *info_label;
 static lv_style_t style;
 static lv_style_t style_time;
 static lv_style_t style_date;
@@ -62,6 +64,17 @@ void gfx_init(void)
 	lv_label_set_style(time_label, LV_LABEL_STYLE_MAIN, &style_time);
 	lv_label_set_text(time_label, "00:00");
 	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, -25);
+
+	info_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_style(info_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_label_set_text(info_label, "Hypnos" "\n"
+			  "Build: " FW_BUILD "\n\n"
+			  "This is Free Software" "\n"
+			  "with ABSOLUTELY NO" "\n"
+			  "WARRANTY. See https://" "\n"
+			  "github.com/endian-albin" "\n"
+			  "/pinetime-hypnos");
+	lv_obj_set_hidden(info_label, true);
 
 	/* Date label and style */
 	style_date.body.main_color = LV_COLOR_BLACK;
@@ -134,12 +147,19 @@ void gfx_battery_set_label(enum battery_symbol s)
 
 void gfx_show_info(void)
 {
-	lv_label_set_text(date_label, "Hypnos");
-	style_date.text.color = LV_COLOR_RED;
-	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
+	lv_obj_set_hidden(time_label, true);
+	lv_obj_set_hidden(date_label, true);
+	lv_obj_set_hidden(bt_label, true);
+	lv_obj_set_hidden(battery_label, true);
+	lv_obj_set_hidden(info_label, false);
+	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 0);
 }
 
-void gfx_show_date(void)
+void gfx_show_watch(void)
 {
-	style_date.text.color = LV_COLOR_YELLOW;
+	lv_obj_set_hidden(time_label, false);
+	lv_obj_set_hidden(date_label, false);
+	lv_obj_set_hidden(bt_label, false);
+	lv_obj_set_hidden(battery_label, false);
+	lv_obj_set_hidden(info_label, true);
 }

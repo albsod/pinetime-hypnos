@@ -29,6 +29,6 @@ void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
 void gfx_update(void);
 void gfx_show_info(void);
-void gfx_show_date(void);
+void gfx_show_watch(void);
 
 #endif /* GFX__H */

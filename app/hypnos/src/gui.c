@@ -18,7 +18,6 @@ void gui_handle_touch_event(struct device *touch_dev, enum cst816s_gesture gestu
 {
 	switch (gesture) {
 	case SLIDE_UP ... SLIDE_RIGHT:
-		LOG_INF("Current screen is %d", sc);
 		if (sc == WATCH) {
 			gfx_show_info();
 			sc = INFO;
@@ -30,7 +29,7 @@ void gui_handle_touch_event(struct device *touch_dev, enum cst816s_gesture gestu
 		clock_increment_local_time();
 		clock_show_time();
 		battery_show_status();
-		gfx_show_date();
+		gfx_show_watch();
 	}
 	gfx_update();
 }
