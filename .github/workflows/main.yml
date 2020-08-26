@@ -76,7 +76,7 @@ jobs:
         run:  pip3 install --user -r bootloader/mcuboot/scripts/requirements.txt
       - name: Create mcuboot app image for lupyuen's custom PineTime bootloader # Use mcuboot v1.6.0-rc2 referenced by west.yml
         run:  |
-            bootloader/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 256 --slot-size 475136 --pad-header build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
+            bootloader/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 32 --slot-size 475136 --pad-header build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
             bootloader/mcuboot/scripts/imgtool.py verify hypnos-mcuboot-app-img.bin
       - name: Get short git hash
         id: vars

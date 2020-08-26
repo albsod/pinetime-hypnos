@@ -1,5 +1,20 @@
 menu "Pinetime"
 
+config TEXT_SECTION_OFFSET
+	hex
+	prompt "TEXT section offset" if !BOOTLOADER_MCUBOOT
+	default 0x20 if BOOTLOADER_MCUBOOT
+	default 0
+	help
+	  If the application is built for chain-loading by a bootloader this
+	  variable is required to be set to value that leaves sufficient
+	  space between the beginning of the image and the start of the .text
+	  section to store an image header or any other metadata.
+	  In the particular case of the MCUboot bootloader this reserves enough
+	  space to store the image header, which should also meet vector table
+	  alignment requirements on most ARM targets, although some targets
+	  may require smaller or larger values.
+
 rsource "drivers/sensor/Kconfig"
 rsource "subsys/Kconfig"
 
