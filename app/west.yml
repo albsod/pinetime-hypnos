@@ -21,7 +21,8 @@ manifest:
 
   remotes:
     - name: app
-      url-base: https://github.com/zephyrproject-rtos
+      url-base: #https://github.com/zephyrproject-rtos
+      url-base: https://github.com/endian-albin
 
   # External projects
   #
@@ -46,6 +47,6 @@ manifest:
       revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
     - name: zephyr
       west-commands: scripts/west-commands.yml
-      revision: v2.3.0
+      revision: v2.3.0-align-vector-table
   self:
     path: app
