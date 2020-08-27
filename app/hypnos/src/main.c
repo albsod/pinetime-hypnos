@@ -17,6 +17,9 @@
 #include "event_handler.h"
 #include "gfx.h"
 #include "log.h"
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+	#include "dfu/mcuboot.h"
+#endif
 
 /* ******** Thread prototypes, constants and macros ******** */
 void main_thread(void);
@@ -43,6 +46,14 @@ void main(void)
 	event_handler_init();
 	gfx_update();
 	backlight_init();
+
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+	/* TODO: Ask the user to confirm the new image */
+	if (!boot_is_img_confirmed()) {
+		LOG_DBG("Confirming new firmware image.");
+		(void)boot_write_img_confirmed();
+	}
+#endif
 }
 
 void main_thread(void)

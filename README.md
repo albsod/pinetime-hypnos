@@ -19,6 +19,7 @@ This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmwa
 - [x] Touch sensor: tap to light up the display
 - [x] LVGL graphics: show time, date, battery and Bluetooth status
 - [x] Optional debug output via JLink RTT
+- [x] Optional support for the PineTime bootloader
 - [ ] Show notifications from Bluetooth-connected device
 - [ ] Set alarm
 - [ ] Wrist vibration
@@ -27,6 +28,8 @@ This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmwa
 - [ ] Step counting (see above)
 
 ## Getting started
+
+### Setting up the development environment
 
 Follow Zephyr's [Getting Started Guide](https://docs.zephyrproject.org/latest/getting_started/index.html)
 up to step 3.2 "Get the Zephyr source code". Here you should run the commands below
@@ -40,9 +43,12 @@ $ west update
 
 Then complete the remaining steps.
 
-Optionally disable logging to save system resources:
+### Building
+
+Optionally enable logging and/or bootloader support:
 ```
-$ export LOGGING="off"
+$ export LOGGING="on"
+$ export BOOTLOADER="on"
 ```
 
 Build the firmware for either `pinetime` or `p8` (replace `<board>` below):
@@ -51,11 +57,41 @@ $ cd app/
 $ west build -p -b <board> hypnos
 ```
 
-Install:
+### Installing without bootloader
 
+Install/program using a JLink:
 ```
 $ west flash
 ```
+
+If you have access to an ST-Link v2 or Raspberry Pi, you can program `build/zephyr/zephyr.bin` to offset 0 by following Lup Yuen's
+[OpenOCD instructions](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#select-the-openocd-interface-st-link-or-raspberry-pi-spi).
+
+### Installing with bootloader support
+
+If you have built Hypnos with bootloader support, you will need to follow the steps below instead.
+
+Generate an image containing the MCUBoot header:
+```
+$ cd ../bootloader/mcuboot/scripts
+$ pip3 install --user setuptools
+$ pip3 install --user -r requirements.txt
+$ ./imgtool.py create --align 4 --version 1.0.0 --header-size 256 --slot-size 475136 ../../../app/build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
+```
+
+Install using OpenOCD:
+```
+program hypnos-mcuboot-app-img.bin 0x8000
+```
+
+or JLink:
+```
+$ /opt/SEGGER/JLink/JLinkExe -device nrf52 -if swd -speed 4000 -autoconnect 1
+J-Link> loadbin hypnos-mcuboot-app-img.bin, 0x8000
+```
+
+To install the bootloader itself, follow Lup Yuen's own [instructions](https://github.com/lupyuen/pinetime-rust-mynewt/releases/tag/v4.1.7).
+
 
 ## Copying
 
