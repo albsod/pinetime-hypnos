@@ -2,17 +2,17 @@
 
 cmake_minimum_required(VERSION 3.13.1)
 
-# Add the pinetime board
+# Add the board
 list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Config files
-IF("$ENV{LOGGING}" STREQUAL "off")
-  message(STATUS "LOGGING will be disabled.")
-  set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf)
-ELSE()
-  message(STATUS "LOGGING will be enabled.")
-  set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf ${CMAKE_CURRENT_LIST_DIR}/logging.conf)
+set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf)
+IF("$ENV{BOOTLOADER}" STREQUAL "on")
+  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/bootloader.conf)
+ENDIF()
+IF("$ENV{LOGGING}" STREQUAL "on")
+  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/logging.conf)
 ENDIF()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})

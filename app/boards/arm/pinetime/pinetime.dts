@@ -36,7 +36,7 @@
 		};
 		led2_blue: led_2 {
 			gpios = <&gpio0 23 GPIO_INT_ACTIVE_LOW>;
-			label = "Background LED 1";
+			label = "Background LED 2";
 		};
 	};
 
@@ -137,6 +137,16 @@
 		jedec-id = [0b 40 16];
 		size = <67108864>;
 		has-be32k;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot1_partition: partition@40000 {
+					 label = "image-1";
+					 reg = <0x00040000 0x74000>;
+			};
+		};
 	};
 };
 
@@ -152,23 +162,15 @@
 
 		boot_partition: partition@0 {
 			label = "mcuboot";
-			reg = <0x00000000 0xc000>;
+			reg = <0x00000000 0x8000>;
 		};
-		slot0_partition: partition@c000 {
+		slot0_partition: partition@8000 {
 			label = "image-0";
-			reg = <0x0000C000 0x32000>;
+			reg = <0x00008000 0x74000>;
 		};
-		slot1_partition: partition@3e000 {
-			label = "image-1";
-			reg = <0x0003E000 0x32000>;
-		};
-		scratch_partition: partition@70000 {
+		scratch_partition: partition@7C000 {
 			label = "image-scratch";
-			reg = <0x00070000 0xa000>;
-		};
-		storage_partition: partition@7a000 {
-			label = "storage";
-			reg = <0x0007a000 0x00006000>;
+			reg = <0x0007C000 0xA000>;
 		};
 	};
 };
