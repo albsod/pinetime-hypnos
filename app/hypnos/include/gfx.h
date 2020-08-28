@@ -28,5 +28,7 @@ void gfx_bt_set_label(enum bt_symbol);
 void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
 void gfx_update(void);
+void gfx_show_info(void);
+void gfx_show_watch(void);
 
 #endif /* GFX__H */

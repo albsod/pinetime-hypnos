@@ -7,6 +7,7 @@
 #include <lvgl.h>
 #include "gfx.h"
 #include "log.h"
+#include "version.h"
 
 /* ********** Macros and constants ********** */
 LV_FONT_DECLARE(rubik_regular_68);
@@ -20,14 +21,15 @@ static lv_obj_t *battery_label;
 static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
+static lv_obj_t *info_label;
+static lv_style_t style;
+static lv_style_t style_time;
+static lv_style_t style_date;
 
 /* ********** Functions ********** */
 void gfx_init(void)
 {
 	/* Create styles for time, date and the rest */
-	static lv_style_t style;
-	static lv_style_t style_time;
-	static lv_style_t style_date;
 	lv_style_copy(&style, &lv_style_plain);
 	lv_style_copy(&style_time, &lv_style_plain);
 	lv_style_copy(&style_date, &lv_style_plain);
@@ -54,6 +56,7 @@ void gfx_init(void)
 	style_time.body.main_color = LV_COLOR_BLACK;
 	style_time.body.grad_color = LV_COLOR_BLACK;
 	style_time.text.font = &rubik_regular_68;
+
 	style_time.text.color = LV_COLOR_WHITE;
 	style_time.text.color = LV_COLOR_WHITE;
 	lv_obj_set_style(lv_scr_act(), &style_time);
@@ -61,6 +64,17 @@ void gfx_init(void)
 	lv_label_set_style(time_label, LV_LABEL_STYLE_MAIN, &style_time);
 	lv_label_set_text(time_label, "00:00");
 	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, -25);
+
+	info_label = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_style(info_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_label_set_text(info_label, "Hypnos" "\n"
+			  "Build: " FW_BUILD "\n\n"
+			  "This is Free Software" "\n"
+			  "with ABSOLUTELY NO" "\n"
+			  "WARRANTY. See https://" "\n"
+			  "github.com/endian-albin" "\n"
+			  "/pinetime-hypnos");
+	lv_obj_set_hidden(info_label, true);
 
 	/* Date label and style */
 	style_date.body.main_color = LV_COLOR_BLACK;
@@ -79,7 +93,6 @@ void gfx_update(void)
 {
 	lv_task_handler();
 }
-
 
 void gfx_time_set_label(char *str)
 {
@@ -130,4 +143,23 @@ void gfx_battery_set_label(enum battery_symbol s)
 		lv_label_set_text(battery_label, LV_SYMBOL_BATTERY_EMPTY);
 	}
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
+}
+
+void gfx_show_info(void)
+{
+	lv_obj_set_hidden(time_label, true);
+	lv_obj_set_hidden(date_label, true);
+	lv_obj_set_hidden(bt_label, true);
+	lv_obj_set_hidden(battery_label, true);
+	lv_obj_set_hidden(info_label, false);
+	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 0);
+}
+
+void gfx_show_watch(void)
+{
+	lv_obj_set_hidden(time_label, false);
+	lv_obj_set_hidden(date_label, false);
+	lv_obj_set_hidden(bt_label, false);
+	lv_obj_set_hidden(battery_label, false);
+	lv_obj_set_hidden(info_label, true);
 }

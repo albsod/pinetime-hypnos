@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/sensor.h>
+#include <drivers/sensor/cst816s.h>
 #include <stdbool.h>
 #include "backlight.h"
 #include "battery.h"
@@ -14,10 +15,8 @@
 #include "clock.h"
 #include "display.h"
 #include "event_handler.h"
-#include "gfx.h"
+#include "gui.h"
 #include "log.h"
-
-#include <drivers/sensor/cst816s.h>
 
 /* ********** defines ********** */
 #define BAT_CHA 12
@@ -43,9 +42,9 @@ static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
 };
-
 static enum cst816s_gesture gesture;
 static struct sensor_value touch_point;
+
 /* ********** ********* ********** */
 
 /* ********** init function ********** */
@@ -111,25 +110,14 @@ void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint
 
 void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
 {
+	display_wake_up();
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
-	display_wake_up();
-	clock_increment_local_time();
-	clock_show_time();
-	battery_show_status();
-	if (bt_toggle_is_locked()) {
-		return;
-	}
-	k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
 
-	if (bt_mode()) {
-		gfx_bt_set_label(BT_ADVERTISING_OFF);
-		bt_off();
-	} else {
-		gfx_bt_set_label(BT_ADVERTISING_ON);
-		bt_on();
+	int toggle = gui_handle_button_event();
+	if (toggle) {
+		k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
 	}
-	gfx_update();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
@@ -137,20 +125,18 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 	if (sensor_sample_fetch(touch_dev) < 0) {
 		LOG_ERR("Touch sample update error.");
 	}
+
+	display_wake_up();
+	backlight_enable(true);
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
+
 	struct sensor_value gesture_val;
 	sensor_channel_get(touch_dev, CST816S_CHAN_GESTURE, &gesture_val);
 	gesture = gesture_val.val1;
-
 	sensor_channel_get(touch_dev, CST816S_CHAN_TOUCH_POINT_1, &touch_point);
-	LOG_INF("Gesture %d on x=%d, y=%d", gesture, touch_point.val1, touch_point.val2);
 
-	backlight_enable(true);
-	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
-	display_wake_up();
-	clock_increment_local_time();
-	clock_show_time();
-	battery_show_status();
-	gfx_update();
+	LOG_INF("Gesture %d on x=%d, y=%d", gesture, touch_point.val1, touch_point.val2);
+	gui_handle_touch_event(touch_dev, gesture);
 }
 
 /* ********** ************** ********** */
