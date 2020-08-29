@@ -18,8 +18,8 @@ This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmwa
 - [x] Button: press to toggle time synchronization with Bluetooth-connected device
 - [x] Touch sensor: tap to light up the display
 - [x] LVGL graphics: show time, date, battery and Bluetooth status
-- [x] Optional debug output via JLink RTT
 - [x] Optional support for the PineTime bootloader
+- [x] Optional debug output via JLink RTT
 - [ ] Show notifications from Bluetooth-connected device
 - [ ] Set alarm
 - [ ] Wrist vibration
@@ -29,7 +29,7 @@ This is a work-in-progress [Zephyr](https://www.zephyrproject.org/)-based firmwa
 
 ## Getting started
 
-### Setting up the development environment
+### Set up the development environment
 
 Follow Zephyr's [Getting Started Guide](https://docs.zephyrproject.org/latest/getting_started/index.html)
 up to step 3.2 "Get the Zephyr source code". Here you should run the commands below
@@ -41,15 +41,17 @@ $ west init -l app/
 $ west update
 ```
 
-Then complete the remaining steps.
+Then complete the remaining steps under section 3 and 4.
 
-### Building
+### Configure
 
-Optionally enable logging and/or bootloader support:
+Optionally enable bootloader support and/or RTT logging:
 ```
-$ export LOGGING="on"
 $ export BOOTLOADER="on"
+$ export RTT_LOG="on"
 ```
+
+### Build
 
 Build the firmware for either `pinetime` or `p8` (replace `<board>` below):
 ```
@@ -57,41 +59,42 @@ $ cd app/
 $ west build -p -b <board> hypnos
 ```
 
-### Installing without bootloader
+### Install
 
-Install/program using a JLink:
+Connect your "in-circuit" programmer to the SWD pins on the watch.
+
+Program using pyocd:
 ```
 $ west flash
 ```
 
-If you have access to an ST-Link v2 or Raspberry Pi, you can program `build/zephyr/zephyr.bin` to offset 0 by following Lup Yuen's
-[OpenOCD instructions](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#select-the-openocd-interface-st-link-or-raspberry-pi-spi).
-
-### Installing with bootloader support
+...or run `west flash --context` for more options.
 
 If you have built Hypnos with bootloader support, you will need to follow the steps below instead.
 
-Generate an image containing the MCUBoot header:
+Generate a [DFU](https://docs.zephyrproject.org/2.3.0/guides/device_mgmt/dfu.html) image:
 ```
 $ cd ../bootloader/mcuboot/scripts
 $ pip3 install --user setuptools
 $ pip3 install --user -r requirements.txt
-$ ./imgtool.py create --align 4 --version 1.0.0 --header-size 256 --slot-size 475136 ../../../app/build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
+$ ./imgtool.py create --align 4 --version 1.0.0 --header-size 256 --slot-size 475136 ../../../app/build/zephyr/zephyr.bin hypnos-dfu-app.bin
 ```
 
-Install using OpenOCD:
+Flash the image to offset 0x8000:
 ```
-program hypnos-mcuboot-app-img.bin 0x8000
-```
-
-or JLink:
-```
-$ /opt/SEGGER/JLink/JLinkExe -device nrf52 -if swd -speed 4000 -autoconnect 1
-J-Link> loadbin hypnos-mcuboot-app-img.bin, 0x8000
+pyocd flash -e sector -a 0x8000 -t nrf52 hypnos-dfu-app.bin
 ```
 
-To install the bootloader itself, follow Lup Yuen's own [instructions](https://github.com/lupyuen/pinetime-rust-mynewt/releases/tag/v4.1.7).
+### Build and install the bootloader
 
+To install the bootloader used by PineTime, follow Lup Yuen's [build instructions](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#build-and-flash-mcuboot-bootloader)
+or [fetch the prebuilt binary](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#build-and-flash-mcuboot-bootloader).
+
+Then flash it to the beginning of the internal memory:
+
+```
+pyocd flash -e sector -t nrf52 bootloader-image.bin
+```
 
 ## Copying
 

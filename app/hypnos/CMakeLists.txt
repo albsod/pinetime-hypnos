@@ -6,13 +6,13 @@ cmake_minimum_required(VERSION 3.13.1)
 list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
-# Config files
-set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/prj.conf)
+# Enable configurations through environment variables
+set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf)
 IF("$ENV{BOOTLOADER}" STREQUAL "on")
-  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/bootloader.conf)
+  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/config/bootloader.conf)
 ENDIF()
-IF("$ENV{LOGGING}" STREQUAL "on")
-  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/logging.conf)
+IF("$ENV{RTT_LOG}" STREQUAL "on")
+  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/config/logging_rtt.conf)
 ENDIF()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
