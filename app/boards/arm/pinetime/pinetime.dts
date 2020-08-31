@@ -156,9 +156,9 @@
 		};
 		slot0_partition: partition@8000 {
 			label = "image-0";
-			reg = <0x00008000 0x74000>;
+			reg = <0x00008000 0x64000>;
 		};
-		scratch_partition: partition@7C000 {
+		scratch_partition: partition@6C000 {
 			label = "image-scratch";
 			reg = <0x0007c000 0xa000>;
 		};

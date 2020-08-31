@@ -67,7 +67,7 @@ void gfx_init(void)
 
 	info_label = lv_label_create(lv_scr_act(), NULL);
 	lv_label_set_style(info_label, LV_LABEL_STYLE_MAIN, &style);
-	lv_label_set_text(info_label, "Hypnos" "\n"
+	lv_label_set_text(info_label, "Hypnos DFU yyy" "\n"
 			  "Build: " FW_BUILD "\n\n"
 			  "This is Free Software" "\n"
 			  "with ABSOLUTELY NO" "\n"
