@@ -27,15 +27,15 @@
 	leds {
 		compatible = "gpio-leds";
 		led0_green: led_0 {
-			gpios = <&gpio0 14 GPIO_INT_ACTIVE_LOW>;
+			gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
 			label = "Background LED 0";
 		};
 		led1_red: led_1 {
-			gpios = <&gpio0 22 GPIO_INT_ACTIVE_LOW>;
+			gpios = <&gpio0 22 GPIO_ACTIVE_LOW>;
 			label = "Background LED 1";
 		};
 		led2_blue: led_2 {
-			gpios = <&gpio0 23 GPIO_INT_ACTIVE_LOW>;
+			gpios = <&gpio0 23 GPIO_ACTIVE_LOW>;
 			label = "Background LED 2";
 		};
 	};

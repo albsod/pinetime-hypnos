@@ -77,7 +77,7 @@ Generate a [DFU](https://docs.zephyrproject.org/2.3.0/guides/device_mgmt/dfu.htm
 $ cd ../bootloader/mcuboot/scripts
 $ pip3 install --user setuptools
 $ pip3 install --user -r requirements.txt
-$ ./imgtool.py create --align 4 --version 1.0.0 --header-size 256 --slot-size 475136 ../../../app/build/zephyr/zephyr.bin hypnos-dfu-app.bin
+$ ./imgtool.py create --align 4 --version 1.0.0 --header-size 512 --slot-size 475136 ../../../app/build/zephyr/zephyr.bin hypnos-dfu-app.bin
 ```
 
 Flash the image to offset 0x8000:
