@@ -32,7 +32,6 @@
 
 /* ********** variables ********** */
 static struct k_timer display_off_timer;
-static struct k_timer bt_toggle_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
@@ -97,11 +96,6 @@ void display_off_isr(struct k_timer *light_off)
 	display_sleep();
 }
 
-/* void bt_toggle_unlock_isr(struct k_timer *bt_toggle) */
-/* { */
-/* 	bt_toggle_unlock(); */
-/* } */
-
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint32_t pins)
 {
 	uint32_t res = gpio_pin_get(charging_dev, BAT_CHA);
@@ -112,12 +106,9 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 {
 	display_wake_up();
 	backlight_enable(true);
-	/* k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT); */
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
-	int toggle = gui_handle_button_event();
-	if (toggle) {
-		k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
-	}
+	gui_handle_button_event();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
@@ -128,7 +119,7 @@ void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
 
 	display_wake_up();
 	backlight_enable(true);
-	/* k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT); */
+	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
 	struct sensor_value gesture_val;
 	sensor_channel_get(touch_dev, CST816S_CHAN_GESTURE, &gesture_val);
