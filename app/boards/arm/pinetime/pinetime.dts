@@ -129,7 +129,7 @@
 		rgb-param = [CD 08 14];
 	};
 
-	mx25r64: mx25r6435f@1 {
+	flash1: mx25r6435f@1 {
 		compatible = "jedec,spi-nor";
 		reg = <1>;
 		spi-max-frequency = <1000000>;
@@ -137,16 +137,6 @@
 		jedec-id = [0b 40 16];
 		size = <67108864>;
 		has-be32k;
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			slot1_partition: partition@40000 {
-					 label = "image-1";
-					 reg = <0x00040000 0x74000>;
-			};
-		};
 	};
 };
 
@@ -170,7 +160,28 @@
 		};
 		scratch_partition: partition@7C000 {
 			label = "image-scratch";
-			reg = <0x0007C000 0xA000>;
+			reg = <0x0007c000 0xa000>;
+		};
+	};
+};
+
+&flash1 {
+	/*
+	 * For more information, see:
+	 * http://docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+	 */
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		slot1_partition: partition@40000 {
+			label = "image-1";
+			reg = <0x00040000 0x74000>;
+		};
+		storage_partition: partition@b4000 {
+			label = "storage";
+			reg = <0x000b4000 0x0034c000>;
 		};
 	};
 };
