@@ -60,7 +60,7 @@ $ west build -p -b <board> hypnos
 
 ### Install
 
-Generate a [DFU](https://docs.zephyrproject.org/2.3.0/guides/device_mgmt/dfu.html) image:
+Generate an mcuboot app image:
 ```
 $ cd ../bootloader/mcuboot/scripts
 $ pip3 install --user setuptools
@@ -84,7 +84,7 @@ $ west flash
 ### Build and install the bootloader
 
 To install the compatible PineTime bootloader, follow Lup Yuen's [build instructions](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#build-and-flash-mcuboot-bootloader)
-or [fetch the prebuilt binary](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#build-and-flash-mcuboot-bootloader).
+or [fetch the prebuilt binary](https://github.com/lupyuen/pinetime-rust-mynewt/releases/tag/v5.0.0).
 
 Then flash it to the beginning of the internal memory:
 
@@ -92,16 +92,18 @@ Then flash it to the beginning of the internal memory:
 pyocd flash -e sector -t nrf52 bootloader-image.bin
 ```
 
-### Firmware update over Bluetooth
+## Firmware upgrade over Bluetooth LE
 
-Building with bootloader support also enables over-the-air firmware image management.
+### SMP
+
+Hypnos supports firmware image management over the Simple Management Protocol.
 
 To make use of this feature, get the [mcumgr](https://github.com/apache/mynewt-mcumgr#command-line-tool) command-line tool.
-Then run the commands below to list, upload, test and confirm firmware images:
+Then run the commands below to list, upload, test and confirm firmware images over BLE:
 
 ```
 # mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' image list
-# mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' image upload new-dfu-app.bin
+# mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' image upload hypnos-mcuboot-app.bin
 # mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' image test <hash of slot-1 image>
 # mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' reset
 # mcumgr --conntype="ble" --connstring ctlr_name=hci0,peer_name='Hypnos' image confirm
@@ -109,6 +111,24 @@ Then run the commands below to list, upload, test and confirm firmware images:
 
 If you are unhappy with the new image, simply run the `reset` command again instead of `image confirm` to revert to the old one.
 [See this document for more information](https://docs.zephyrproject.org/latest/samples/subsys/mgmt/mcumgr/smp_svr/README.html).
+
+### DFU / InfiniTime
+
+To install Hypnos over the air from [InfiniTime](https://github.com/JF002/Pinetime) you need to create a SoftDevice DFU zip package and upload that.
+
+Install adafruit-nrfutil:
+```
+$ pip3 install --user wheel
+$ pip3 install --user setuptools
+$ pip3 install --user adafruit-nrfutil
+```
+
+Create the DFU zip package from the imgtool.py output above:
+```
+$ adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application hypnos-mcuboot-app.bin hypnos-mcuboot-app-dfu.zip
+```
+
+Connect to InfiniTime and upload `hypnos-mcuboot-app-dfu.zip`.
 
 ## Copying
 
