@@ -74,8 +74,10 @@ void main(void)
 #endif
 	bt_init();
 
-	while (1) {
-		k_sleep(K_MSEC(1000));
-		STATS_INC(smp_svr_stats, ticks);
+	while (true) {
+		k_cpu_idle();
+#ifdef CONFIG_LOG
+		k_msleep(1); /* Allows messages to show up in the console */
+#endif
 	}
 }
