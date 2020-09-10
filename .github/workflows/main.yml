@@ -69,6 +69,14 @@ jobs:
         id: west-build
         with:
           args: 'build "-p -b ${{ matrix.device }} app/hypnos"'
+      - name: Install setuptools
+        run: pip3 install --user setuptools
+      - name: Install imgtool dependencies
+        run:  pip3 install --user -r bootloader/mcuboot/scripts/requirements.txt
+      - name: Create mcuboot app image for lupyuen's custom PineTime bootloader # Use mcuboot v1.6.0-rc2 referenced by west.yml
+        run:  |
+            bootloader/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 512 --slot-size 475136 build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
+            bootloader/mcuboot/scripts/imgtool.py verify hypnos-mcuboot-app-img.bin
       - name: Get short git hash
         id: vars
         shell: bash
@@ -80,4 +88,6 @@ jobs:
         with:
           # Append git hash to file name
           name: ${{ matrix.device }}-hypnos-fw-${{ steps.vars.outputs.sha_short }}
-          path: build/zephyr/zephyr.*
+          path: |
+            build/zephyr/zephyr.*
+            hypnos-mcuboot-app-img.bin
