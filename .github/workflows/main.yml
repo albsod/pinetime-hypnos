@@ -69,25 +69,39 @@ jobs:
         id: west-build
         with:
           args: 'build "-p -b ${{ matrix.device }} app/hypnos"'
-      - name: Install setuptools
-        run: pip3 install --user setuptools
+      - name: Install adafruit-nrfutil
+        run: |
+          pip3 install --user wheel
+          pip3 install --user setuptools
+          pip3 install --user adafruit-nrfutil
       - name: Install imgtool dependencies
         run:  pip3 install --user -r bootloader/mcuboot/scripts/requirements.txt
       - name: Create mcuboot app image for lupyuen's custom PineTime bootloader # Use mcuboot v1.6.0-rc2 referenced by west.yml
-        run:  |
+        run: |
             bootloader/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 512 --slot-size 475136 build/zephyr/zephyr.bin hypnos-mcuboot-app-img.bin
             bootloader/mcuboot/scripts/imgtool.py verify hypnos-mcuboot-app-img.bin
+      - name: Create DFU package
+        run: |
+            ~/.local/bin/adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application hypnos-mcuboot-app-img.bin hypnos-mcuboot-app-dfu.zip
+            # Unzip the package because Upload Artifact will zip up the files
+            unzip hypnos-mcuboot-app-dfu.zip -d hypnos-mcuboot-app-dfu
       - name: Get short git hash
         id: vars
         shell: bash
         run:
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      # Upload firmware build
+      # Upload zephyr firmware build
       - name: Upload firmware build
         uses: actions/upload-artifact@v2
         with:
           # Append git hash to file name
-          name: ${{ matrix.device }}-hypnos-fw-${{ steps.vars.outputs.sha_short }}
+          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.sha_short }}
           path: |
             build/zephyr/zephyr.*
-            hypnos-mcuboot-app-img.bin
+      # Upload DFU package
+      - name: Upload DFU package
+        uses: actions/upload-artifact@v2
+        with:
+          # Append git hash to file name
+          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.sha_short }}-mcuboot-app-dfu
+          path: hypnos-mcuboot-app-dfu/*
