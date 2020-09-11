@@ -8,6 +8,7 @@
 #include "gfx.h"
 #include "log.h"
 #include "version.h"
+#include <string.h>
 
 /* ********** Macros and constants ********** */
 LV_FONT_DECLARE(rubik_regular_68);
@@ -67,13 +68,22 @@ void gfx_init(void)
 
 	info_label = lv_label_create(lv_scr_act(), NULL);
 	lv_label_set_style(info_label, LV_LABEL_STYLE_MAIN, &style);
-	lv_label_set_text(info_label, "Hypnos" "\n"
-			  "Build: " FW_BUILD "\n\n"
-			  "This is Free Software" "\n"
-			  "with ABSOLUTELY NO" "\n"
-			  "WARRANTY. See https://" "\n"
-			  "github.com/endian-albin" "\n"
-			  "/pinetime-hypnos");
+	if (strlen(FW_VERSION) < 10) {
+		lv_label_set_text(info_label, "Hypnos " FW_VERSION "\n\n"
+				  "This is Free Software" "\n"
+				  "without any warranty." "\n\n"
+				  "https://github.com/"   "\n"
+				  "endian-albin/"         "\n"
+				  "pinetime-hypnos");
+	} else {
+		lv_label_set_text(info_label, "Hypnos"    "\n"
+				  FW_VERSION              "\n\n"
+				  "This is Free Software" "\n"
+				  "without any warranty." "\n"
+				  "https://github.com/"   "\n"
+				  "endian-albin/"         "\n"
+				  "pinetime-hypnos");
+	}
 	lv_obj_set_hidden(info_label, true);
 
 	/* Date label and style */
