@@ -39,15 +39,6 @@ int gui_handle_button_event(void)
 	clock_increment_local_time();
 	clock_show_time();
 	battery_show_status();
-	if (bt_toggle_is_locked()) {
-		return 0;
-	} else if (bt_mode()) {
-		gfx_bt_set_label(BT_ADVERTISING_OFF);
-		bt_off();
-	} else {
-		gfx_bt_set_label(BT_ADVERTISING_ON);
-		bt_on();
-	}
 	gfx_update();
 
 	return 1;

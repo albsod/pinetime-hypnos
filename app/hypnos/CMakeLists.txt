@@ -7,11 +7,11 @@ list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Enable configurations through environment variables
-set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf)
-IF("$ENV{BOOTLOADER}" STREQUAL "on")
-  set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/config/bootloader.conf)
+set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf ${CMAKE_CURRENT_LIST_DIR}/config/bootloader.conf)
+IF("$ENV{BOOTLOADER}" STREQUAL "off")
+  set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf)
 ENDIF()
-IF("$ENV{RTT_LOG}" STREQUAL "on")
+IF("$ENV{LOGGING}" STREQUAL "on")
   set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/config/logging_rtt.conf)
 ENDIF()
 

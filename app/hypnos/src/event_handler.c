@@ -27,12 +27,19 @@
 #define PULL_UP DT_GPIO_FLAGS(DT_ALIAS(sw0), gpios)
 #define TOUCH_PORT CONFIG_CST816S_NAME
 #define DISPLAY_TIMEOUT K_SECONDS(5)
-#define BT_TOGGLE_LOCK_TIMEOUT K_SECONDS(3)
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+/* The watchdog released by the PineTime bootloader v5.0.0-rc1
+ * will try to bite every 7 seconds.
+ */
+#define WDT_REFRESH 6
+#endif
 /* ********** ******* ********** */
 
 /* ********** variables ********** */
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+static struct k_timer watchdog_refresh_timer;
+#endif
 static struct k_timer display_off_timer;
-static struct k_timer bt_toggle_timer;
 static struct device *charging_dev;
 static struct gpio_callback charging_cb;
 static struct device *button_dev;
@@ -69,11 +76,20 @@ void event_handler_init()
 	gpio_pin_configure(button_dev, BTN_OUT, GPIO_OUTPUT);
 	gpio_pin_set_raw(button_dev, BTN_OUT, button_out);
 
-	/* Initialize timers */
-	k_timer_init(&display_off_timer, display_off_isr, NULL);
-	k_timer_init(&bt_toggle_timer, bt_toggle_unlock_isr, NULL);
-
 	/* Start timers */
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+	if (NRF_WDT->RUNSTATUS) {
+		LOG_INF("Watchdog detected. Let's kick it every %d seconds.",
+			WDT_REFRESH);
+		k_timer_init(&watchdog_refresh_timer, watchdog_refresh_isr,
+			     NULL);
+		k_timer_start(&watchdog_refresh_timer, K_NO_WAIT,
+			      K_SECONDS(WDT_REFRESH));
+	} else {
+		LOG_INF("No watchdog detected.");
+	}
+#endif
+	k_timer_init(&display_off_timer, display_off_isr, NULL);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
 	/* Special cases */
@@ -91,15 +107,17 @@ void event_handler_init()
 /* ********** ************ ********** */
 
 /* ********** interrupt handlers ********** */
+#ifdef CONFIG_BOOTLOADER_MCUBOOT
+void watchdog_refresh_isr(struct k_timer *wdt_refresh)
+{
+	NRF_WDT->RR[0] = WDT_RR_RR_Reload;
+}
+#endif
+
 void display_off_isr(struct k_timer *light_off)
 {
 	backlight_enable(false);
 	display_sleep();
-}
-
-void bt_toggle_unlock_isr(struct k_timer *bt_toggle)
-{
-	bt_toggle_unlock();
 }
 
 void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint32_t pins)
@@ -114,10 +132,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 	backlight_enable(true);
 	k_timer_start(&display_off_timer, DISPLAY_TIMEOUT, K_NO_WAIT);
 
-	int toggle = gui_handle_button_event();
-	if (toggle) {
-		k_timer_start(&bt_toggle_timer, BT_TOGGLE_LOCK_TIMEOUT, K_NO_WAIT);
-	}
+	gui_handle_button_event();
 }
 
 void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
