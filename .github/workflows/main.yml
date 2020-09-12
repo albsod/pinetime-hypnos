@@ -27,8 +27,13 @@ jobs:
     steps:
       # To use this repository's private action,
       # you must check out the repository
+      # Fetch tags and print them as well as the short commit hash
       - name: Checkout
         uses: actions/checkout@v2
+      - run: |
+            git fetch origin 'refs/tags/*:refs/tags/*'
+            echo $(git tag -l)
+            echo $(git rev-parse --short HEAD)
       - name: Cache west modules
         uses: actions/cache@v2
         env:
@@ -85,23 +90,23 @@ jobs:
             ~/.local/bin/adafruit-nrfutil dfu genpkg --dev-type 0x0052 --application hypnos-mcuboot-app-img.bin hypnos-mcuboot-app-dfu.zip
             # Unzip the package because Upload Artifact will zip up the files
             unzip hypnos-mcuboot-app-dfu.zip -d hypnos-mcuboot-app-dfu
-      - name: Get short git hash
+      - name: Get firmware version from git
         id: vars
         shell: bash
         run:
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=fw_ver::$(git describe --tags)"
       # Upload zephyr firmware build
       - name: Upload firmware build
         uses: actions/upload-artifact@v2
         with:
-          # Append git hash to file name
-          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.sha_short }}
+          # Append firmware version to file name
+          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.fw_ver }}
           path: |
             build/zephyr/zephyr.*
       # Upload DFU package
       - name: Upload DFU package
         uses: actions/upload-artifact@v2
         with:
-          # Append git hash to file name
-          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.sha_short }}-mcuboot-app-dfu
+          # Append firmware version to file name
+          name: ${{ matrix.device }}-hypnos-${{ steps.vars.outputs.fw_ver }}-mcuboot-app-dfu
           path: hypnos-mcuboot-app-dfu/*

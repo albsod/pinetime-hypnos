@@ -87,6 +87,4 @@ void clock_show_time()
 	strftime(date_label_str, 32, "%a %d %b", &ti);
 	gfx_time_set_label(time_label_str);
 	gfx_date_set_label(date_label_str);
-	LOG_INF("Build: %s", log_strdup(FW_BUILD));
-	/* LOG_INF("%s | %s", log_strdup(date_label_str), log_strdup(time_label_str)); */
 }
