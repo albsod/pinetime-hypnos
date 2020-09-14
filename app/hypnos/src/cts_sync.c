@@ -52,12 +52,19 @@ void cts_sync_enable(bool enable)
 
 static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 {
+	gfx_bt_set_label(BT_CONNECTED);
+	if (cts_datetime->year + cts_datetime->day + cts_datetime->hours
+	    + cts_datetime->minutes + cts_datetime->seconds == 0) {
+		LOG_WRN("Ignoring suspect time data from companion application.");
+		return;
+	}
+
 	LOG_INF("CTS sync to clock started.\n Y%04d D%03d T%2d:%2d:%2d",
 		cts_datetime->year, cts_datetime->day,
 		cts_datetime->hours, cts_datetime->minutes, cts_datetime->seconds);
+
 	memcpy(&clock_datetime, cts_datetime, sizeof(clock_datetime));
 	clock_sync_time(cts_datetime);
-	gfx_bt_set_label(BT_CONNECTED);
 	LOG_INF("CTS sync to clock complete.");
 }
 
