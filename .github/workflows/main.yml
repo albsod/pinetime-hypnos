@@ -30,10 +30,8 @@ jobs:
       # Fetch tags and print them as well as the short commit hash
       - name: Checkout
         uses: actions/checkout@v2
-      - run: |
-            git fetch origin 'refs/tags/*:refs/tags/*'
-            echo $(git tag -l)
-            echo $(git rev-parse --short HEAD)
+        with:
+          fetch-depth: 0
       - name: Cache west modules
         uses: actions/cache@v2
         env:
