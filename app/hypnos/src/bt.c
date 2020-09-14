@@ -23,11 +23,14 @@
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 
+#ifdef CONFIG_MCUMGR
 #include <mgmt/smp_bt.h>
+#endif
 
 #include "cts_sync.h"
 #include "gfx.h"
 #include "log.h"
+#include "version.h"
 
 /* ********** Function prototypes ********** */
 static void bt_ready(void);
@@ -40,20 +43,21 @@ static void le_param_updated(struct bt_conn *conn, uint16_t interval, uint16_t l
 
 static struct k_work advertise_work;
 
-#ifdef CONFIG_BOOTLOADER_MCUBOOT
 static const struct bt_data ad[] = {
 	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+	/* Device information */
+	BT_DATA_BYTES(BT_DATA_UUID16_ALL,
+		      0x0a, 0x18),
+	/* Current time */
+	BT_DATA_BYTES(BT_DATA_UUID16_ALL,
+		      0x05, 0x18),
+#ifdef CONFIG_MCUMGR
+	/* SMP */
 	BT_DATA_BYTES(BT_DATA_UUID128_ALL,
 		      0x84, 0xaa, 0x60, 0x74, 0x52, 0x8a, 0x8b, 0x86,
 		      0xd3, 0x4c, 0xb7, 0x1d, 0x1d, 0xdc, 0x53, 0x8d),
-};
-#else
-static const struct bt_data ad[] = {
-	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
-	BT_DATA_BYTES(BT_DATA_UUID16_ALL,
-		      0x0d, 0x18, 0x0f, 0x18, 0x05, 0x18),
-};
 #endif
+};
 
 static struct bt_conn_cb m_conn_callbacks = {
 	.connected = connected,
@@ -70,6 +74,36 @@ static struct bt_le_adv_param param = BT_LE_ADV_PARAM_INIT(
 );
 
 /* ********** Functions ********** */
+static int settings_runtime_load(void)
+{
+#if defined(CONFIG_BOARD_PINETIME)
+	settings_runtime_set("bt/dis/model",
+			     "PineTime",
+			     sizeof("PineTime"));
+	settings_runtime_set("bt/dis/manuf",
+			     "PINE64",
+			     sizeof("PINE64"));
+	settings_runtime_set("bt/dis/hw",
+			     "1.0a",
+			     sizeof("1.0a"));
+#endif
+#if defined(CONFIG_BOARD_P8)
+	settings_runtime_set("bt/dis/model",
+			     "P8",
+			     sizeof("P8"));
+	settings_runtime_set("bt/dis/manuf",
+			     "Colmi",
+			     sizeof("Colmi"));
+#endif
+	settings_runtime_set("bt/dis/sw",
+			     CONFIG_BT_DEVICE_NAME,
+			     sizeof(CONFIG_BT_DEVICE_NAME));
+	settings_runtime_set("bt/dis/fw",
+			     FW_VERSION,
+			     sizeof(FW_VERSION));
+	return 0;
+}
+
 static void advertise(struct k_work *work)
 {
 	int rc;
@@ -100,7 +134,10 @@ static void bt_ready(void)
 	if (IS_ENABLED(CONFIG_SETTINGS)) {
 		settings_load();
 	}
-#ifdef CONFIG_BOOTLOADER_MCUBOOT
+
+	settings_runtime_load();
+
+#ifdef CONFIG_MCUMGR
 	/* Initialize the Bluetooth mcumgr transport. */
 	smp_bt_register();
 #endif
