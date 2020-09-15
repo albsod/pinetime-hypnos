@@ -45,14 +45,14 @@ int battery_init(battery_callback_t callback);
  *
  * @return 0 on success, negative number on error.
  */
-int battery_read(s16_t *raw);
+int battery_read(int16_t *raw);
 
 /** @brief Convert raw value to millivolts.
  *
  * @param raw	Raw value.
  * @return Value in millivolts.
  */
-int battery_raw_to_mv(s16_t raw);
+int battery_raw_to_mv(int16_t raw);
 
 /** @brief Coonvert millivolts to pptt (points per ten thousend)
  *

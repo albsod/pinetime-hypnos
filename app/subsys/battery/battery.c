@@ -54,10 +54,10 @@ static battery_callback_t callback;
 
 struct battery_level_point {
 	/** Remaining life at #lvl_mV. */
-	u16_t lvl_pptt;
+	uint16_t lvl_pptt;
 
 	/** Battery voltage at #lvl_pptt remaining life. */
-	u16_t lvl_mV;
+	uint16_t lvl_mV;
 };
 
 static const struct battery_level_point lipo[] = {
@@ -142,8 +142,8 @@ K_TIMER_DEFINE(debounce_timer, timeout_handler, NULL);
 
 static void timeout_handler(struct k_timer *timer)
 {
-	u32_t ext_power_val;
-	u32_t charge_val;
+	uint32_t ext_power_val;
+	uint32_t charge_val;
 	bool log_action;
 
 	gpio_pin_read(gpio, CHARGE_PIN, &ext_power_val);
@@ -192,7 +192,7 @@ bool battery_is_charging(void)
 }
 
 static void pin_handler(struct device *gpiob, struct gpio_callback *cb,
-		    u32_t pins)
+		    uint32_t pins)
 {
 	static bool flop = true;
 
@@ -265,9 +265,9 @@ int battery_init(battery_callback_t cb)
 }
 
 
-int battery_read(s16_t *raw)
+int battery_read(int16_t *raw)
 {
-	s16_t data[1];
+	int16_t data[1];
 	int err;
 
 	const struct adc_sequence sequence = {
@@ -293,7 +293,7 @@ int battery_read(s16_t *raw)
 	return 0;
 }
 
-int battery_raw_to_mv(s16_t raw)
+int battery_raw_to_mv(int16_t raw)
 {
 	return (DIVIDER*600*(((int)raw*4*1000) >> RESOLUTION))/1000;
 }
@@ -334,7 +334,7 @@ static int cmd_battery_status(const struct shell *shell,
 	int err;
 	int mv;
 	int proc;
-	s16_t raw;
+	int16_t raw;
 
 	err = battery_read(&raw);
 	if (err < 0) {
