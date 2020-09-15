@@ -33,7 +33,6 @@
 #include "version.h"
 
 /* ********** Function prototypes ********** */
-static void bt_ready(void);
 static void connected(struct bt_conn *conn, uint8_t err);
 static void disconnected(struct bt_conn *conn, uint8_t reason);
 static bool le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param);
@@ -110,37 +109,13 @@ static void advertise(struct k_work *work)
 
 	bt_le_adv_stop();
 
-	rc = bt_le_adv_start(BT_LE_ADV_CONN_NAME, ad, ARRAY_SIZE(ad), NULL, 0);
+	rc = bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0);
 	if (rc) {
 		LOG_ERR("Advertising failed to start (rc %d)", rc);
 		return;
 	}
 
 	LOG_INF("Advertising successfully started");
-}
-
-static void bt_ready(void)
-{
-	k_work_init(&advertise_work, advertise);
-	bt_conn_cb_register(&m_conn_callbacks);
-
-	int err = bt_le_adv_start(&param, ad, ARRAY_SIZE(ad), NULL, 0);
-	if (err) {
-		LOG_ERR("BLE adv start failed (err %d)", err);
-	}
-
-	LOG_DBG("Bluetooth initialized");
-
-	if (IS_ENABLED(CONFIG_SETTINGS)) {
-		settings_load();
-	}
-
-	settings_runtime_load();
-
-#ifdef CONFIG_MCUMGR
-	/* Initialize the Bluetooth mcumgr transport. */
-	smp_bt_register();
-#endif
 }
 
 static void connected(struct bt_conn *conn, uint8_t err)
@@ -151,6 +126,7 @@ static void connected(struct bt_conn *conn, uint8_t err)
 	LOG_INF("connected");
 	cts_sync_enable(true);
 	gfx_bt_set_label(BT_CONNECTED);
+	gfx_update();
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
@@ -158,6 +134,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	LOG_INF("disconnected (reason: %u)", reason);
 	cts_sync_enable(false);
 	gfx_bt_set_label(BT_ADVERTISING_ON);
+	gfx_update();
 }
 
 static bool le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
@@ -178,9 +155,20 @@ void bt_init(void)
 		return;
 	}
 
-	bt_ready();
+	settings_load();
+	settings_runtime_load();
+
+	k_work_init(&advertise_work, advertise);
+	bt_conn_cb_register(&m_conn_callbacks);
+
 	k_work_submit(&advertise_work);
+#ifdef CONFIG_MCUMGR
+	/* Initialize the Bluetooth mcumgr transport. */
+	smp_bt_register();
+#endif
 	cts_sync_init();
+
+	LOG_DBG("Bluetooth initialized");
 }
 
 void bt_adv_stop(void)

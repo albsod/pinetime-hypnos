@@ -12,7 +12,6 @@
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 #include <time.h>
-#include "gfx.h"
 #include "log.h"
 #include "cts_sync.h"
 #include "clock.h"
@@ -52,7 +51,6 @@ void cts_sync_enable(bool enable)
 
 static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 {
-	gfx_bt_set_label(BT_CONNECTED);
 	if (cts_datetime->year + cts_datetime->day + cts_datetime->hours
 	    + cts_datetime->minutes + cts_datetime->seconds == 0) {
 		LOG_WRN("Ignoring suspicious time data from companion application.");
