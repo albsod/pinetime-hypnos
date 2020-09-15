@@ -51,7 +51,7 @@ void gfx_init(void)
 	bt_label = lv_label_create(lv_scr_act(), NULL);
 	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 6, 4);
 	lv_label_set_style(bt_label, LV_LABEL_STYLE_MAIN, &style);
-	lv_label_set_text(bt_label, "");
+	lv_label_set_text(bt_label, LV_SYMBOL_WIFI);
 
 	/* Time label and style */
 	style_time.body.main_color = LV_COLOR_BLACK;
@@ -160,9 +160,7 @@ void gfx_show_info(void)
 	lv_obj_set_hidden(time_label, true);
 	lv_obj_set_hidden(date_label, true);
 	lv_obj_set_hidden(bt_label, true);
-	lv_obj_set_hidden(battery_label, true);
 	lv_obj_set_hidden(info_label, false);
-	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 0);
 }
 
 void gfx_show_watch(void)
@@ -170,6 +168,5 @@ void gfx_show_watch(void)
 	lv_obj_set_hidden(time_label, false);
 	lv_obj_set_hidden(date_label, false);
 	lv_obj_set_hidden(bt_label, false);
-	lv_obj_set_hidden(battery_label, false);
 	lv_obj_set_hidden(info_label, true);
 }
