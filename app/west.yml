@@ -42,7 +42,8 @@ manifest:
       revision: e88113bbebe34ff2ccc6627ffae885cfeed6fdfd
       path: bootloader/mcuboot
     - name: mcumgr
-      revision: 5885efb7cabf7b566577b73129c9d277d7d8848d
+      url: https://github.com/endian-albin/mcumgr
+      revision: f4e8e00836b25cc2393acb8c14936f7b5356ff2b
       path: modules/lib/mcumgr
     - name: segger
       path: modules/debug/segger
