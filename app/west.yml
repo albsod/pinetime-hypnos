@@ -31,23 +31,22 @@ manifest:
       revision: 542b2296e6d515b265e25c6b7208e8fea3014f90
     - name: hal_nordic
       path: modules/hal/nordic
-      revision: 742d8fb839406951ef7f95d0132bfa8c2635343f
+      revision: d8a6ea9695ddf792bb18bb6035c13b1daac5d79c
     - name: lvgl
       path: modules/lib/gui/lvgl
-      revision: 74fc2e753a997bd71cefa34dd9c56dcb954b42e2
+      revision: 928b61c7c8ef5f770f10e6fd36d4fea0cf375b5e
     - name: littlefs
       path: modules/fs/littlefs
-      revision: 0aefdda69d236cb01f932117c1f32e9da09c0ec3
+      revision: 9e4498d1c73009acd84bb36036ee5e2869112a6c
     - name: mcuboot
-      revision: e88113bbebe34ff2ccc6627ffae885cfeed6fdfd
+      revision: a5d79cf8ccb2c71e68ef32a71d6a2716e831d12e
       path: bootloader/mcuboot
     - name: mcumgr
-      url: https://github.com/endian-albin/mcumgr
-      revision: f4e8e00836b25cc2393acb8c14936f7b5356ff2b
+      revision: 5051f9d900bbb194a23d4ce80f3c6dc6d6780cc2
       path: modules/lib/mcumgr
     - name: segger
       path: modules/debug/segger
-      revision: 6fcf61606d6012d2c44129edc033f59331e268bc
+      revision: 874d9e9696b00c09f9eeefe839028dc25fe44983
     - name: tinycbor
       path: modules/lib/tinycbor
       revision: 40daca97b478989884bffb5226e9ab73ca54b8c4
@@ -56,6 +55,6 @@ manifest:
       revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
     - name: zephyr
       west-commands: scripts/west-commands.yml
-      revision: v2.3.0
+      revision: v2.4.0
   self:
     path: app
