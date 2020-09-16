@@ -12,7 +12,7 @@
 #include "log.h"
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
-static struct device *display_dev;
+static const struct device *display_dev;
 /* ********** ********** ********** ********** ********** ********** */
 
 /* ********** ********** FUNCTIONS ********** ********** */

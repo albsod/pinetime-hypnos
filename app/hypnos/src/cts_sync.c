@@ -83,7 +83,7 @@ static void cts_sync_timer_timeout_handler(struct k_timer *tmr)
 
 uint8_t cts_sync_read(struct bt_conn *conn, uint8_t err,
 				    struct bt_gatt_read_params *params,
-				    const void *data, u16_t length)
+				    const void *data, uint16_t length)
 {
 	LOG_DBG("Reading CCC data: err %d, %d bytes, offset %d.", err, length, m_read_buf.offset);
 

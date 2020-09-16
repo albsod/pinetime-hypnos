@@ -14,7 +14,7 @@ enum screen {
 	INFO
 };
 
-void gui_handle_touch_event(struct device *, enum cst816s_gesture);
+void gui_handle_touch_event(const struct device *, enum cst816s_gesture);
 int gui_handle_button_event(void);
 
 #endif /* GUI__H */

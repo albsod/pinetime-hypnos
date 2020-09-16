@@ -40,11 +40,11 @@
 static struct k_timer watchdog_refresh_timer;
 #endif
 static struct k_timer display_off_timer;
-static struct device *charging_dev;
+static const struct device *charging_dev;
 static struct gpio_callback charging_cb;
-static struct device *button_dev;
+static const struct device *button_dev;
 static struct gpio_callback button_cb;
-static struct device *touch_dev;
+static const struct device *touch_dev;
 static struct sensor_trigger tap = {
 	.type = SENSOR_TRIG_DATA_READY,
 	.chan = SENSOR_CHAN_ACCEL_XYZ,
@@ -120,13 +120,13 @@ void display_off_isr(struct k_timer *light_off)
 	display_sleep();
 }
 
-void battery_charging_isr(struct device *gpiobat, struct gpio_callback *cb, uint32_t pins)
+void battery_charging_isr(const struct device *gpiobat, struct gpio_callback *cb, uint32_t pins)
 {
 	uint32_t res = gpio_pin_get(charging_dev, BAT_CHA);
 	battery_update_charging_status(res != 1U);
 }
 
-void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
+void button_pressed_isr(const struct device *gpiobtn, struct gpio_callback *cb, uint32_t pins)
 {
 	display_wake_up();
 	backlight_enable(true);
@@ -135,7 +135,7 @@ void button_pressed_isr(struct device *gpiobtn, struct gpio_callback *cb, uint32
 	gui_handle_button_event();
 }
 
-void touch_tap_isr(struct device *touch_dev, struct sensor_trigger *tap)
+void touch_tap_isr(const struct device *touch_dev, struct sensor_trigger *tap)
 {
 	if (sensor_sample_fetch(touch_dev) < 0) {
 		LOG_ERR("Touch sample update error.");

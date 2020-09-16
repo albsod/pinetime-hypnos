@@ -19,9 +19,9 @@
 /* ********** ********** VARIABLES ********** ********** */
 static char time_label_str[32];
 static char date_label_str[32];
-static u64_t uptime_ms;
-static u64_t last_uptime_ms;
-static u64_t elapsed_ms;
+static uint64_t uptime_ms;
+static uint64_t last_uptime_ms;
+static uint64_t elapsed_ms;
 
 static struct tm ti = {
 	.tm_sec = 0,

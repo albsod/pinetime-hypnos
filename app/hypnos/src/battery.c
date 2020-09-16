@@ -23,7 +23,7 @@
 #define COUNT_DOWN 5000
 
 /* ********** ********** VARIABLES ********** ********** */
-static struct device* percentage_dev;
+static const struct device* percentage_dev;
 static int16_t data[1];
 static uint32_t percentage;
 static bool charging;
