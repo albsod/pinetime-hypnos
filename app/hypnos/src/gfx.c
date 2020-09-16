@@ -15,6 +15,8 @@ LV_FONT_DECLARE(rubik_regular_68);
 LV_FONT_DECLARE(rubik_regular_34);
 
 #define BAT_LABEL_MARGIN 3
+#define TIME_LABEL_VALIGNMENT -25
+#define DATE_LABEL_VALIGNMENT 30
 /* ********** ******* ********** */
 
 /* ********** Variables ********** */
@@ -31,43 +33,45 @@ static lv_style_t style_date;
 void gfx_init(void)
 {
 	/* Create styles for time, date and the rest */
-	lv_style_copy(&style, &lv_style_plain);
-	lv_style_copy(&style_time, &lv_style_plain);
-	lv_style_copy(&style_date, &lv_style_plain);
+	lv_style_init(&style);
+	lv_style_init(&style_time);
+	lv_style_init(&style_date);
 
 	/* Default style */
-	style.body.main_color = LV_COLOR_BLACK;
-	style.body.grad_color = LV_COLOR_BLACK;
-	style.text.color = LV_COLOR_WHITE;
-	style.text.font = &lv_font_roboto_22;
-	lv_obj_set_style(lv_scr_act(), &style);
+	lv_style_set_text_color(&style, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+	lv_style_set_text_font(&style, LV_STATE_DEFAULT, &lv_font_montserrat_22);
 
 	/* Battery label */
 	battery_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_style(battery_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_obj_add_style(battery_label, LV_LABEL_PART_MAIN, &style);
 	lv_label_set_text(battery_label, "");
 
 	/* Bluetooth label */
 	bt_label = lv_label_create(lv_scr_act(), NULL);
 	lv_obj_align(bt_label, NULL, LV_ALIGN_IN_TOP_LEFT, 6, 4);
-	lv_label_set_style(bt_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_obj_add_style(bt_label, LV_LABEL_PART_MAIN, &style);
 	lv_label_set_text(bt_label, LV_SYMBOL_WIFI);
 
 	/* Time label and style */
-	style_time.body.main_color = LV_COLOR_BLACK;
-	style_time.body.grad_color = LV_COLOR_BLACK;
-	style_time.text.font = &rubik_regular_68;
-
-	style_time.text.color = LV_COLOR_WHITE;
-	style_time.text.color = LV_COLOR_WHITE;
-	lv_obj_set_style(lv_scr_act(), &style_time);
+	lv_style_set_text_font(&style_time, LV_STATE_DEFAULT, &rubik_regular_68);
+	lv_style_set_text_color(&style_time, LV_STATE_DEFAULT, LV_COLOR_WHITE);
 	time_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_style(time_label, LV_LABEL_STYLE_MAIN, &style_time);
+	lv_obj_add_style(time_label, LV_LABEL_PART_MAIN, &style_time);
 	lv_label_set_text(time_label, "00:00");
-	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, -25);
+	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, TIME_LABEL_VALIGNMENT);
 
+	/* Date label and style */
+	lv_style_set_text_color(&style_date, LV_STATE_DEFAULT, LV_COLOR_YELLOW);
+	lv_style_set_text_font(&style_date, LV_STATE_DEFAULT, &rubik_regular_34);
+	date_label = lv_label_create(lv_scr_act(), NULL);
+	lv_obj_add_style(date_label, LV_LABEL_PART_MAIN, &style_date);
+	lv_label_set_text(date_label, "Mon 10 Jan");
+	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, DATE_LABEL_VALIGNMENT);
+	LOG_DBG("Graphics init: Done");
+
+	/* Info label */
 	info_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_style(info_label, LV_LABEL_STYLE_MAIN, &style);
+	lv_obj_add_style(info_label, LV_LABEL_PART_MAIN, &style);
 	if (strlen(FW_VERSION) < 10) {
 		lv_label_set_text(info_label, "Hypnos " FW_VERSION "\n\n"
 				  "This is Free Software" "\n"
@@ -85,18 +89,6 @@ void gfx_init(void)
 				  "pinetime-hypnos");
 	}
 	lv_obj_set_hidden(info_label, true);
-
-	/* Date label and style */
-	style_date.body.main_color = LV_COLOR_BLACK;
-	style_date.body.grad_color = LV_COLOR_BLACK;
-	style_date.text.font = &rubik_regular_34;
-	style_date.text.color = LV_COLOR_YELLOW;
-	lv_obj_set_style(lv_scr_act(), &style_date);
-	date_label = lv_label_create(lv_scr_act(), NULL);
-	lv_label_set_style(date_label, LV_LABEL_STYLE_MAIN, &style_date);
-	lv_label_set_text(date_label, "Mon 10 Jan");
-	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
-	LOG_DBG("Graphics init: Done");
 }
 
 void gfx_update(void)
@@ -107,13 +99,13 @@ void gfx_update(void)
 void gfx_time_set_label(char *str)
 {
 	lv_label_set_text(time_label, str);
-	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, -25);
+	lv_obj_align(time_label, NULL, LV_ALIGN_CENTER, 0, TIME_LABEL_VALIGNMENT);
 }
 
 void gfx_date_set_label(char *str)
 {
 	lv_label_set_text(date_label, str);
-	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, 30);
+	lv_obj_align(date_label, NULL, LV_ALIGN_CENTER, 0, DATE_LABEL_VALIGNMENT);
 }
 
 void gfx_bt_set_label(enum bt_symbol s)
