@@ -97,7 +97,7 @@ typedef struct {
 } coordinate_t;
 
 struct cst816s_data {
-	struct device *i2c;
+	const struct device *i2c;
 
 	uint8_t chip_id;
 
@@ -108,9 +108,10 @@ struct cst816s_data {
 	coordinate_t touch_point_1;
 	coordinate_t touch_point_2;
 
-	struct device *reset_gpio;
+	const struct device *reset_gpio;
 #ifdef CONFIG_CST816S_TRIGGER
-	struct device *gpio;
+	const struct device *dev;
+	const struct device *gpio;
 	struct gpio_callback gpio_cb;
 
 	struct sensor_trigger data_ready_trigger;
@@ -122,23 +123,22 @@ struct cst816s_data {
 	struct k_sem gpio_sem;
 #elif defined(CONFIG_CST816S_TRIGGER_GLOBAL_THREAD)
 	struct k_work work;
-	struct device *dev;
 #endif
 
 #endif /* CONFIG_CST816S_TRIGGER */
 };
 
 #ifdef CONFIG_CST816S_TRIGGER
-int cst816s_trigger_set(struct device *dev,
+int cst816s_trigger_set(const struct device *dev,
 		       const struct sensor_trigger *trig,
 		       sensor_trigger_handler_t handler);
 
-int cst816s_attr_set(struct device *dev,
+int cst816s_attr_set(const struct device *dev,
 		    enum sensor_channel chan,
 		    enum sensor_attribute attr,
 		    const struct sensor_value *val);
 
-int cst816s_init_interrupt(struct device *dev);
+int cst816s_init_interrupt(const struct device *dev);
 #endif
 
 #endif /* ZEPHYR_DRIVERS_SENSOR_CST816S_CST816S_H_ */

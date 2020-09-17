@@ -19,9 +19,9 @@
 
 LOG_MODULE_REGISTER(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 
-static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
+static int cst816s_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 	uint8_t buf[9];
 	uint8_t msb;
 	uint8_t lsb;
@@ -78,11 +78,11 @@ static int cst816s_sample_fetch(struct device *dev, enum sensor_channel chan)
 	return 0;
 }
 
-static int cst816s_channel_get(struct device *dev,
+static int cst816s_channel_get(const struct device *dev,
 		enum sensor_channel chan,
 		struct sensor_value *val)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	if ((uint16_t)chan == CST816S_CHAN_GESTURE) {
 		val->val1=drv_data->gesture;
@@ -108,9 +108,9 @@ static const struct sensor_driver_api cst816s_driver_api = {
 	.channel_get = cst816s_channel_get,
 };
 
-static void cst816s_chip_reset(struct device* dev)
+static void cst816s_chip_reset(const struct device* dev)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	gpio_pin_set_raw(drv_data->reset_gpio, RESET_PIN, 0);
 	k_msleep(5);
@@ -118,9 +118,9 @@ static void cst816s_chip_reset(struct device* dev)
 	k_msleep(50);
 }
 
-static int cst816s_chip_init(struct device *dev)
+static int cst816s_chip_init(const struct device *dev)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	cst816s_chip_reset(dev);
 
@@ -144,9 +144,9 @@ static int cst816s_chip_init(struct device *dev)
 	return 0;
 }
 
-int cst816s_init(struct device *dev)
+int cst816s_init(const struct device *dev)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	drv_data->i2c = device_get_binding(DT_INST_BUS_LABEL(0));
 	if (drv_data->i2c == NULL) {
