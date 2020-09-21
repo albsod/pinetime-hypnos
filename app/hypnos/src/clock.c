@@ -87,4 +87,5 @@ void clock_show_time()
 	strftime(date_label_str, 32, "%a %d %b", &ti);
 	gfx_time_set_label(time_label_str);
 	gfx_date_set_label(date_label_str);
+	gfx_analog_watch_set_hands(ti.tm_hour, ti.tm_min, ti.tm_sec);
 }

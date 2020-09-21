@@ -29,6 +29,9 @@ void gfx_time_set_label(char *);
 void gfx_date_set_label(char *);
 void gfx_update(void);
 void gfx_show_info(void);
-void gfx_show_watch(void);
+void gfx_show_analog_watch(void);
+void gfx_update_analog_watch(void);
+void gfx_show_digital_watch(void);
+void gfx_analog_watch_set_hands(int, int, int);
 
 #endif /* GFX__H */

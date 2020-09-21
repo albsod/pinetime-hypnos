@@ -15,6 +15,7 @@
 #include "log.h"
 #include "cts_sync.h"
 #include "clock.h"
+#include "gui.h"
 
 /* ********** Definitions ********** */
 #define CTS_SYNC_INTERVAL K_SECONDS(60)
@@ -64,6 +65,7 @@ static void sync_cts_to_clock(cts_datetime_t* cts_datetime)
 	memcpy(&clock_datetime, cts_datetime, sizeof(clock_datetime));
 	clock_sync_time(cts_datetime);
 	LOG_INF("CTS sync to clock complete.");
+	gui_handle_cts_sync_event();
 }
 
 void cts_update_datetime(struct tm *t)

@@ -25,13 +25,31 @@ static lv_obj_t *bt_label;
 static lv_obj_t *time_label;
 static lv_obj_t *date_label;
 static lv_obj_t *info_label;
+static lv_obj_t *analog_watch;
 static lv_style_t style;
 static lv_style_t style_time;
 static lv_style_t style_date;
+static lv_color_t needle_colors[2];
 
 /* ********** Functions ********** */
 void gfx_init(void)
 {
+	/* Analog watch */
+	analog_watch = lv_gauge_create(lv_scr_act(), NULL);
+	lv_gauge_set_needle_count(analog_watch, 2, needle_colors);
+	lv_gauge_set_scale(analog_watch, 360, 13, 0);
+	lv_gauge_set_range(analog_watch, 0, 60);
+	lv_obj_set_size(analog_watch, 240, 240);
+	lv_gauge_set_angle_offset(analog_watch, 180);
+	lv_obj_align(analog_watch, NULL, LV_ALIGN_CENTER, 0, 0);
+
+	needle_colors[0] = LV_COLOR_BLUE;
+	needle_colors[1] = LV_COLOR_ORANGE;
+
+	lv_gauge_set_value(analog_watch, 0, 0);
+	lv_gauge_set_value(analog_watch, 1, 0);
+	lv_obj_set_hidden(analog_watch, true);
+
 	/* Create styles for time, date and the rest */
 	lv_style_init(&style);
 	lv_style_init(&style_time);
@@ -147,18 +165,38 @@ void gfx_battery_set_label(enum battery_symbol s)
 	lv_obj_align(battery_label, NULL, LV_ALIGN_IN_TOP_RIGHT, -BAT_LABEL_MARGIN, 0);
 }
 
-void gfx_show_info(void)
+void gfx_analog_watch_set_hands(int h, int m, int s)
 {
+	double hour = (h * 5 % 60);
+	double minutes = m + s / 60;
+	hour += (minutes / 60) * 5;
+	lv_gauge_set_value(analog_watch, 0, hour);
+	lv_gauge_set_value(analog_watch, 1, m);
+}
+
+void gfx_show_analog_watch(void)
+{
+	lv_obj_set_hidden(analog_watch, false);
 	lv_obj_set_hidden(time_label, true);
 	lv_obj_set_hidden(date_label, true);
+	lv_obj_set_hidden(info_label, true);
 	lv_obj_set_hidden(bt_label, true);
+	lv_obj_set_hidden(battery_label, true);
+}
+
+void gfx_show_info(void)
+{
+	lv_obj_set_hidden(analog_watch, true);
+	lv_obj_set_hidden(time_label, true);
+	lv_obj_set_hidden(date_label, true);
 	lv_obj_set_hidden(info_label, false);
 }
 
-void gfx_show_watch(void)
+void gfx_show_digital_watch(void)
 {
 	lv_obj_set_hidden(time_label, false);
 	lv_obj_set_hidden(date_label, false);
 	lv_obj_set_hidden(bt_label, false);
+	lv_obj_set_hidden(battery_label, false);
 	lv_obj_set_hidden(info_label, true);
 }
