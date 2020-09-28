@@ -17,7 +17,7 @@
 /* ********** **********  ********** ********** ********** */
 
 /* ********** ********** VARIABLES AND STRUCTS ********** ********** */
-static struct device* backlight_dev;
+static const struct device* backlight_dev;
 static bool backlight_enabled = false;
 /* ********** ********** ********** ********** ********** ********** */
 

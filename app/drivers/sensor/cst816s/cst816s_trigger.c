@@ -20,7 +20,7 @@
 
 LOG_MODULE_DECLARE(CST816S, CONFIG_SENSOR_LOG_LEVEL);
 
-int cst816s_attr_set(struct device *dev,
+int cst816s_attr_set(const struct device *dev,
 		enum sensor_channel chan,
 		enum sensor_attribute attr,
 		const struct sensor_value *val)
@@ -34,7 +34,7 @@ int cst816s_attr_set(struct device *dev,
 	return 0;
 }
 
-static void cst816s_gpio_callback(struct device *dev,
+static void cst816s_gpio_callback(const struct device *dev,
 		struct gpio_callback *cb, uint32_t pins)
 {
 	struct cst816s_data *drv_data =
@@ -49,10 +49,9 @@ static void cst816s_gpio_callback(struct device *dev,
 #endif
 }
 
-static void cst816s_thread_cb(void *arg)
+static void cst816s_thread_cb(const struct device *dev)
 {
-	struct device *dev = arg;
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	if (drv_data->data_ready_handler != NULL) {
 		drv_data->data_ready_handler(dev, &drv_data->data_ready_trigger);
@@ -60,16 +59,11 @@ static void cst816s_thread_cb(void *arg)
 }
 
 #ifdef CONFIG_CST816S_TRIGGER_OWN_THREAD
-static void cst816s_thread(int dev_ptr, int unused)
+static void cst816s_thread(struct cst816s_data *drv_data)
 {
-	struct device *dev = INT_TO_POINTER(dev_ptr);
-	struct cst816s_data *drv_data = dev->driver_data;
-
-	ARG_UNUSED(unused);
-
 	while (true) {
 		k_sem_take(&drv_data->gpio_sem, K_FOREVER);
-		cst816s_thread_cb(dev);
+		cst816s_thread_cb(drv_data->dev);
 	}
 }
 #endif
@@ -84,11 +78,11 @@ static void cst816s_work_cb(struct k_work *work)
 }
 #endif
 
-int cst816s_trigger_set(struct device *dev,
+int cst816s_trigger_set(const struct device *dev,
 		const struct sensor_trigger *trig,
 		sensor_trigger_handler_t handler)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 
 	if (trig->type == SENSOR_TRIG_DATA_READY) {
 
@@ -105,9 +99,9 @@ int cst816s_trigger_set(struct device *dev,
 	return 0;
 }
 
-int cst816s_init_interrupt(struct device *dev)
+int cst816s_init_interrupt(const struct device *dev)
 {
-	struct cst816s_data *drv_data = dev->driver_data;
+	struct cst816s_data *drv_data = dev->data;
 	
 	/* setup data ready gpio interrupt */
 	drv_data->gpio = device_get_binding(DT_INST_GPIO_LABEL(0, int1_gpios));
@@ -135,8 +129,8 @@ int cst816s_init_interrupt(struct device *dev)
 
 	k_thread_create(&drv_data->thread, drv_data->thread_stack,
 			CONFIG_CST816S_THREAD_STACK_SIZE,
-			(k_thread_entry_t)cst816s_thread, dev,
-			0, NULL, K_PRIO_COOP(CONFIG_CST816S_THREAD_PRIORITY),
+			(k_thread_entry_t)cst816s_thread, drv_data,
+			NULL, NULL, K_PRIO_COOP(CONFIG_CST816S_THREAD_PRIORITY),
 			0, K_NO_WAIT);
 #elif defined(CONFIG_CST816S_TRIGGER_GLOBAL_THREAD)
 	drv_data->work.handler = cst816s_work_cb;

@@ -16,8 +16,8 @@ void display_off_isr(struct k_timer *);
 void watchdog_refresh_isr(struct k_timer *);
 #endif
 void battery_percentage_isr(struct k_timer *);
-void battery_charging_isr(struct device*, struct gpio_callback *, uint32_t);
-void button_pressed_isr(struct device *, struct gpio_callback *, uint32_t);
-void touch_tap_isr(struct device *, struct sensor_trigger *);
+void battery_charging_isr(const struct device*, struct gpio_callback *, uint32_t);
+void button_pressed_isr(const struct device *, struct gpio_callback *, uint32_t);
+void touch_tap_isr(const struct device *, struct sensor_trigger *);
 
 #endif /* EVENT_HANDLER */

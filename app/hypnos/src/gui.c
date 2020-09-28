@@ -14,7 +14,7 @@
 
 static enum screen sc;
 
-void gui_handle_touch_event(struct device *touch_dev, enum cst816s_gesture gesture)
+void gui_handle_touch_event(const struct device *touch_dev, enum cst816s_gesture gesture)
 {
 	switch (gesture) {
 	case SLIDE_UP ... SLIDE_RIGHT:

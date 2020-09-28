@@ -24,7 +24,7 @@
 #include <bluetooth/gatt.h>
 
 #ifdef CONFIG_MCUMGR
-#include <mgmt/smp_bt.h>
+#include <mgmt/mcumgr/smp_bt.h>
 #endif
 
 #include "cts_sync.h"
