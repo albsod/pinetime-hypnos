@@ -1,4 +1,4 @@
-set(PINETIME_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "Pinetime root directory")
+set(PINETIME_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "Hypnos root directory")
 
 zephyr_include_directories(include)
 

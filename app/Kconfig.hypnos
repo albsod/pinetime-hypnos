@@ -1,4 +1,4 @@
-menu "Pinetime"
+menu "Hypnos"
 
 rsource "drivers/sensor/Kconfig"
 rsource "subsys/Kconfig"

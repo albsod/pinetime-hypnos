@@ -9,7 +9,7 @@
 #include <nordic/nrf52832_qfaa.dtsi>
 
 / {
-	model = "p8 open source watch";
+	model = "p8 smartwatch";
 	compatible = "nrf52832";
 
 	chosen {
@@ -158,9 +158,9 @@
 			label = "image-0";
 			reg = <0x00008000 0x74000>;
 		};
-		scratch_partition: partition@7C000 {
+		scratch_partition: partition@7c000 {
 			label = "image-scratch";
-			reg = <0x0007C000 0xA000>;
+			reg = <0x0007c000 0xa000>;
 		};
 	};
 };
@@ -188,4 +188,8 @@
 
 &adc {
 	status = "okay";
+};
+
+&uart0 {
+	status = "disabled";
 };

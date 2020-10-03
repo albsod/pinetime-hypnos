@@ -9,7 +9,7 @@
 #include <nordic/nrf52832_qfaa.dtsi>
 
 / {
-	model = "pinetime open source watch";
+	model = "pinetime smartwatch";
 	compatible = "nrf52832";
 
 	chosen {
@@ -188,4 +188,8 @@
 
 &adc {
 	status = "okay";
+};
+
+&uart0 {
+	status = "disabled";
 };
