@@ -27,7 +27,7 @@ string(TIMESTAMP CURRENT_TIME %Y-%m-%dT%H:%M:%S)
 
 # Get short commit hash
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} describe --tags
+  COMMAND ${GIT_EXECUTABLE} describe --tags --dirty
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   OUTPUT_VARIABLE FW_BUILD_GIT
   OUTPUT_STRIP_TRAILING_WHITESPACE

@@ -17,7 +17,7 @@ BOOTLOADER := $(shell cat build/zephyr/.config 2>/dev/null \
 endif
 
 BUILD   := build/zephyr/zephyr.bin
-VERSION := $(shell git describe --tags)
+VERSION := $(shell git describe --tags --dirty)
 IMGDIR  := images
 IMAGE   := $(IMGDIR)/$(BOARD)-hypnos-$(VERSION)-mcuboot-app-img.bin
 PACKAGE := $(IMGDIR)/$(BOARD)-hypnos-$(VERSION)-mcuboot-app-dfu.zip
