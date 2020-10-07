@@ -41,16 +41,20 @@ help:
 	@echo "images and DFU packages for devices running Lup Yuen Lee's"
 	@echo "custom MCUBoot bootloader\n"
 	@echo "Usage:"
-	@echo "  make [TARGET] [BOARD=p8]\n"
+	@echo "  make [OPTION]... [TARGET]\n"
+	@echo "Options:"
+	@echo "  BOARD=p8     build for p8 instead of pinetime"
+	@echo "  BOOTLOADER=n disable bootloader support"
+	@echo "  LOGGING=y    enable RTT logging"
 	@echo "Targets:"
-	@echo "  build    build application firmware"
-	@echo "  clean    remove the build directory"
-	@echo "  dfu      build a Device Firmare Upgrade package"
-	@echo "  flash    flash the most recent image over the SWD interface"
-	@echo "  help     show this message and exit"
-	@echo "  image    build an MCUBoot app image"
-	@echo "  print    print various strings for debugging this Makefile"
-	@echo "  tools    install tools for creating images and DFU packages"
+	@echo "  build        build application firmware"
+	@echo "  clean        remove the build directory"
+	@echo "  dfu          build a Device Firmare Upgrade package"
+	@echo "  flash        flash the most recent app image or firmware build over SWD"
+	@echo "  help         show this message and exit"
+	@echo "  image        build an MCUBoot app image"
+	@echo "  print        print variables and file paths for debugging this Makefile"
+	@echo "  tools        install tools for creating images and DFU packages"
 
 tools:
 	@echo "Installing tools for creating app images and DFU packages"
@@ -63,7 +67,7 @@ $(IMGDIR):
 	mkdir $(IMGDIR)
 
 $(BUILD):
-	west build -p -b $(BOARD) app/hypnos
+	west build -p auto -b $(BOARD) app/hypnos
 
 $(PACKAGE): $(IMAGE)
 	@echo "Creating a Device Firmware Update package"

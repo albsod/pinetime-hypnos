@@ -26,7 +26,7 @@ This is a [Zephyr](https://www.zephyrproject.org/)-based firmware for the
 - [ ] Wrist vibration
 - [ ] Quick glance via lift-to-wake
 
-## Getting started
+## Developer getting started guide
 
 This document assumes that you run a GNU/Linux or Mac operating system.
 
@@ -44,31 +44,20 @@ $ west init -l app/
 $ west update
 ```
 
-Then complete the remaining steps under section 3 and 4.
+Then complete the remaining steps under section 3 and 4. Finally, run `make
+tools`.
 
-Finally, run `make tools`.
+### Build and flash Hypnos
 
-### Configure
+Run `make` to build everything with the defaults or `make help` to view all the
+options and targets.
 
-Optionally override the default configuration:
-```
-$ export BOARD=p8     # build for p8 instead of pinetime
-$ export BOOTLOADER=n # disable bootloader support
-$ export LOGGING=y    # enable RTT logging
-```
+Then connect your in-circuit programmer and run `make flash`. To install
+without a programmer, see Firmware updates below.
 
-### Build
+### Build and flash the bootloader
 
-Run `make build` to compile the application firmware or `make image` to generate
-an MCUboot app image.
-
-### Install
-
-Connect your in-circuit programmer and run `make flash`.
-
-### Build and install the bootloader
-
-To install the compatible PineTime bootloader, follow Lup Yuen's [build
+To install or upgrade the bootloader, follow Lup Yuen's [build
 instructions](https://lupyuen.github.io/pinetime-rust-mynewt/articles/mcuboot#build-and-flash-mcuboot-bootloader)
 or [fetch the prebuilt
 binary](https://github.com/lupyuen/pinetime-rust-mynewt/releases/tag/v5.0.4).
