@@ -5,3 +5,7 @@
 /zephyr
 /app/build
 /build
+/images
+GPATH
+GRTAGS
+GTAGS

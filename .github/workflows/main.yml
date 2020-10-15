@@ -92,7 +92,7 @@ jobs:
         id: vars
         shell: bash
         run:
-          echo "::set-output name=fw_ver::$(git describe --tags)"
+          echo "::set-output name=fw_ver::$(git describe --tags --dirty)"
       # Upload zephyr firmware build
       - name: Upload firmware build
         uses: actions/upload-artifact@v2

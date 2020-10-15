@@ -8,10 +8,10 @@ list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Enable configurations through environment variables
 set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf ${CMAKE_CURRENT_LIST_DIR}/config/bootloader.conf)
-IF("$ENV{BOOTLOADER}" STREQUAL "off")
+IF("$ENV{BOOTLOADER}" STREQUAL n)
   set(CONF_FILE ${CMAKE_CURRENT_LIST_DIR}/config/prj.conf)
 ENDIF()
-IF("$ENV{LOGGING}" STREQUAL "on")
+IF("$ENV{LOGGING}" STREQUAL y)
   set(CONF_FILE ${CONF_FILE} ${CMAKE_CURRENT_LIST_DIR}/config/logging_rtt.conf)
 ENDIF()
 
@@ -27,7 +27,7 @@ string(TIMESTAMP CURRENT_TIME %Y-%m-%dT%H:%M:%S)
 
 # Get short commit hash
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} describe --tags
+  COMMAND ${GIT_EXECUTABLE} describe --tags --dirty
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   OUTPUT_VARIABLE FW_BUILD_GIT
   OUTPUT_STRIP_TRAILING_WHITESPACE
