@@ -61,6 +61,7 @@ tools:
 	pip3 install --user setuptools
 	pip3 install --user -r bootloader/mcuboot/scripts/requirements.txt
 	pip3 install --user pyocd
+	pip3 install --adafruit-nrfutil
 	@echo "Done"
 
 $(IMGDIR):
