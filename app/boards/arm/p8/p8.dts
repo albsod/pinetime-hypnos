@@ -136,7 +136,6 @@
 		label = "MX25R64";
 		jedec-id = [20 40 16];
 		size = <67108864>;
-		has-be32k;
 	};
 };
 
