@@ -25,14 +25,12 @@ void display_init(void)
 
 void display_sleep(void)
 {
-	(void)pm_device_state_set(display_dev, PM_DEVICE_STATE_LOW_POWER, NULL,
-				     NULL);
+	(void)pm_device_state_set(display_dev, PM_DEVICE_STATE_LOW_POWER);
 }
 
 void display_wake_up(void)
 {
-	(void)pm_device_state_set(display_dev, PM_DEVICE_STATE_LOW_POWER, NULL,
-				     NULL);
+	(void)pm_device_state_set(display_dev, PM_DEVICE_STATE_LOW_POWER);
 }
 
 
