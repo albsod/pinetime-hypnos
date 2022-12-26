@@ -28,21 +28,21 @@ manifest:
   projects:
     - name: cmsis
       path: modules/hal/cmsis
-      revision: c3bd2094f92d574377f7af2aec147ae181aa5f8e
+      revision: b0612c97c1401feeb4160add6462c3627fe90fc7
     - name: hal_nordic
       path: modules/hal/nordic
-      revision: 574493fe29c79140df4827ab5d4a23df79d03681
+      revision: a6e5299041f152da5ae0ab17b2e44e088bb96d6d
     - name: lvgl
       path: modules/lib/gui/lvgl
-      revision: 31acbaa36e9e74ab88ac81e3d21e7f1d00a71136
+      revision: 783c1f78c8e39751fe89d0883c8bce7336f55e94
     - name: littlefs
       path: modules/fs/littlefs
       revision: 9e4498d1c73009acd84bb36036ee5e2869112a6c
     - name: mcuboot
-      revision: 2fce9769b191411d580bbc65b043956c2ae9307e
+      revision: 70bfbd21cdf5f6d1402bc8d0031e197222ed2ec0
       path: bootloader/mcuboot
     - name: mcumgr
-      revision: 5c5055f5a7565f8152d75fcecf07262928b4d56e
+      revision: 480cb48e42703e49595a697bb2410a1fcd105f5e
       path: modules/lib/mcumgr
     - name: segger
       path: modules/debug/segger
@@ -55,6 +55,6 @@ manifest:
       revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
     - name: zephyr
       west-commands: scripts/west-commands.yml
-      revision: v2.6.1-rc2
+      revision: v2.7.4
   self:
     path: app
