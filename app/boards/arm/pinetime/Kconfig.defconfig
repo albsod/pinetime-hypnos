@@ -15,13 +15,6 @@ config I2C_1
 
 endif # I2C
 
-if SPI
-
-config SPI_0
-	default y
-
-endif # SPI
-
 config BT_CTLR
 	default BT
 
