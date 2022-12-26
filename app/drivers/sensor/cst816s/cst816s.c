@@ -183,6 +183,7 @@ int cst816s_init(const struct device *dev)
 
 struct cst816s_data cst816s_driver;
 
-DEVICE_AND_API_INIT(cst816s, DT_INST_LABEL(0), cst816s_init, &cst816s_driver,
-		NULL, POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,
-		&cst816s_driver_api);
+/* DEVICE_AND_API_INIT -> DEVICE_DT_INST_DEFINE eller DEVICE_DEFINE */
+DEVICE_DT_INST_DEFINE(cst816s, DT_INST_LABEL(0), cst816s_init, &cst816s_driver,
+		      NULL, POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,
+		      &cst816s_driver_api);
