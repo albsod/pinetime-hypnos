@@ -32,20 +32,24 @@ This document assumes that you run a GNU/Linux or Mac operating system.
 
 ### Set up the development environment
 
-Follow Zephyr's [Getting Started
-Guide](https://docs.zephyrproject.org/latest/getting_started/index.html) up to
-step 3.2 "Get the Zephyr source code". Here you should run the commands below
-instead of the ones in the guide:
+Follow v2.6 of Zephyr's [Getting Started
+Guide](https://docs.zephyrproject.org/2.6.0/getting_started/index.html) up to
+but excluding "Build the Blinky Sample" with the following exceptions:
+
+- Get CMake min. v3.13.1 and max. v3.19
+- Under "Get the Zephyr source code", run the commands below instead
+  of the ones in the guide:
 
 ```
-$ git clone https://github.com/endian-albin/pinetime-hypnos
+$ git clone https://github.com/albsod/pinetime-hypnos
 $ cd pinetime-hypnos
 $ west init -l app/
 $ west update
 ```
 
-Then complete the remaining steps under section 3 and 4. Finally, run `make
-tools`.
+- Under "Download the latest SDK installer", fetch v0.14.2 of the Zephyr toolchain
+
+Finally, run `make tools`.
 
 ### Build and flash Hypnos
 
